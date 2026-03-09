@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_SUpabaseVitorGoleiro__list_tables",
+      "Bash(npx shadcn@latest add sidebar avatar dropdown-menu separator sheet tooltip badge input label card table dialog select textarea tabs skeleton sonner -y)",
+      "mcp__claude_ai_SUpabaseVitorGoleiro__generate_typescript_types",
+      "mcp__claude_ai_SUpabaseVitorGoleiro__get_project_url",
+      "mcp__claude_ai_SUpabaseVitorGoleiro__get_publishable_keys",
+      "Bash(npm install @supabase/supabase-js @supabase/ssr zod react-hook-form @hookform/resolvers)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(grep -r \"split\\\\|preview\\\\|grid\" app/\\\\\\(dashboard\\\\\\)/blog/[id]/editar/blog-post-editor.tsx)",
+      "Bash(grep -E \"export function|export const\" components/ui/*.tsx)",
+      "Bash(npx shadcn@latest add)",
+      "Bash(npx @anthropic-ai/claude-code-skills add shadcn/ui)",
+      "Bash(npx claude-code skills add shadcn/ui)",
+      "Bash(npx @anthropic-ai/claude-code skills add shadcn/ui)",
+      "Bash(cat \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)/pedidos/[id]/page.tsx\")",
+      "Bash(ls -la \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)/blog/\")",
+      "Bash(cat \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)/blog/novo/page.tsx\")",
+      "Bash(find \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)/blog/novo\" -type f)",
+      "Bash(ls -la \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app\"/\"\\(dashboard\\)\"/\"blog\"/\"novo\")",
+      "Bash(ls -la \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app\"/\"\\(dashboard\\)\"/\"blog\"/\"[id]\"/\"editar\")",
+      "Bash(ls -la \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app\"/\"\\(dashboard\\)\"/\"agenda\")",
+      "Bash(ls -la \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app\"/\"\\(dashboard\\)\"/\"agenda\"/\"novo\")",
+      "Bash(cat \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app\"/\"\\(dashboard\\)\"/\"agenda\"/\"novo\"/\"page.tsx\")",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Read(//d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/**)",
+      "Bash(find \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)\" -type f -name \"page.tsx\")",
+      "Bash(find \"/d/TRABALHOS/Goleiro Vitor/dashboard-goleiro/app/\\(dashboard\\)\" -type f -name \"actions.ts\")",
+      "Bash(npx tsc --noEmit --pretty)",
+      "Bash(npm install browser-image-compression)",
+      "Bash(xargs ls -1)",
+      "Bash(npx next build)",
+      "mcp__claude_ai_SUpabaseVitorGoleiro__execute_sql"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "mcp__claude_ai_SUpabaseVitorGoleiro__apply_migration",
+      "Bash(npm install @tiptap/react @tiptap/starter-kit @tiptap/pm @tiptap/extension-image @tiptap/extension-link @tiptap/extension-placeholder @tiptap/extension-text-align @tiptap/extension-underline @tiptap/extension-youtube @tiptap/extension-color @tiptap/extension-text-style @tiptap/extension-highlight)",
+      "Bash(npx shadcn@latest add checkbox -y)",
+      "Bash(npx shadcn@latest add chart -y)"
+    ],
+    "additionalDirectories": [
+      "d:\\TRABALHOS\\Goleiro Vitor\\dashboard-goleiro\\app\\(dashboard)\\produtos\\[id]",
+      "d:\\TRABALHOS\\Goleiro Vitor\\dashboard-goleiro\\app\\(dashboard)\\pedidos",
+      "d:\\TRABALHOS\\Goleiro Vitor\\dashboard-goleiro\\app\\(dashboard)\\blog\\[id]",
+      "d:\\TRABALHOS\\Goleiro Vitor\\dashboard-goleiro\\app\\(dashboard)\\agenda\\[id]"
+    ]
+  }
+}
