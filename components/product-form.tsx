@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImageUploader } from "@/components/image-uploader"
 import { createProduct, updateProduct } from "@/app/(dashboard)/produtos/actions"
-import { Loader2, ArrowLeft } from "lucide-react"
+import { Loader2, ArrowLeft, ShoppingCart, CreditCard, XCircle, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -24,6 +24,17 @@ interface ExistingImage {
   id: string
   image_url: string
   is_cover: boolean
+}
+
+interface ProductAnalytics {
+  addToCart: number
+  removeFromCart: number
+  checkoutStarted: number
+  checkoutCompleted: number
+  abandoned: number
+  uniqueAddToCart: number
+  uniqueCheckoutStarted: number
+  uniqueCheckoutCompleted: number
 }
 
 interface ProductFormProps {
@@ -38,9 +49,10 @@ interface ProductFormProps {
     is_main: boolean | null
   }
   existingImages?: ExistingImage[]
+  analytics?: ProductAnalytics
 }
 
-export function ProductForm({ product, existingImages = [] }: ProductFormProps) {
+export function ProductForm({ product, existingImages = [], analytics }: ProductFormProps) {
   const [isPending, startTransition] = useTransition()
   const [productId, setProductId] = useState<string | null>(product?.id ?? null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -213,6 +225,61 @@ export function ProductForm({ product, existingImages = [] }: ProductFormProps) 
               </div>
             </CardContent>
           </Card>
+
+          {analytics && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Analytics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ShoppingCart className="h-4 w-4" />
+                    Adições ao carrinho
+                  </span>
+                  <span className="text-sm font-semibold">{analytics.addToCart}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CreditCard className="h-4 w-4" />
+                    Checkouts iniciados
+                  </span>
+                  <span className="text-sm font-semibold">{analytics.checkoutStarted}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <TrendingUp className="h-4 w-4" />
+                    Compras finalizadas
+                  </span>
+                  <span className="text-sm font-semibold">{analytics.checkoutCompleted}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <XCircle className="h-4 w-4" />
+                    Carrinhos abandonados
+                  </span>
+                  <span className={`text-sm font-semibold ${analytics.abandoned > 0 ? "text-destructive" : ""}`}>
+                    {analytics.abandoned}
+                  </span>
+                </div>
+                {analytics.addToCart > 0 && (
+                  <>
+                    <div className="my-2 h-px bg-border" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Taxa de conversão</span>
+                      <span className="text-sm font-semibold">
+                        {((analytics.checkoutCompleted / analytics.addToCart) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Usuários únicos</span>
+                      <span className="text-sm font-semibold">{analytics.uniqueAddToCart}</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardContent className="pt-6">

@@ -111,6 +111,9 @@ export default async function ProdutosPage() {
                   <TableHead className="text-center">Estoque</TableHead>
                   <TableHead className="text-center">Desconto</TableHead>
                   <TableHead className="text-center">Principal</TableHead>
+                  <TableHead className="text-center">Carrinho</TableHead>
+                  <TableHead className="text-center">Checkouts</TableHead>
+                  <TableHead className="text-center">Abandonos</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -159,6 +162,37 @@ export default async function ProdutosPage() {
                         <Badge variant="default">Sim</Badge>
                       ) : (
                         "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span className="inline-flex items-center gap-1 text-sm">
+                              <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
+                              {analyticsMap.get(product.id)?.addToCart ?? 0}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>Adições ao carrinho</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="text-sm">
+                        {analyticsMap.get(product.id)?.checkoutCompleted ?? 0}
+                        <span className="text-muted-foreground">
+                          /{analyticsMap.get(product.id)?.checkoutStarted ?? 0}
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {(analyticsMap.get(product.id)?.abandoned ?? 0) > 0 ? (
+                        <Badge variant="destructive" className="text-xs">
+                          <XCircle className="mr-1 h-3 w-3" />
+                          {analyticsMap.get(product.id)?.abandoned}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">0</span>
                       )}
                     </TableCell>
                     <TableCell>

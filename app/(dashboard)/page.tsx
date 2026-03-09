@@ -15,6 +15,7 @@ import {
   Users,
   DollarSign,
   TrendingUp,
+  XCircle,
 } from "lucide-react"
 import { RevenueChart } from "@/components/charts/revenue-chart"
 import { OrdersByStatus } from "@/components/charts/orders-by-status"
@@ -38,6 +39,7 @@ async function getOverviewData() {
     { data: checkoutSummary },
     { data: cartAdditions },
     { data: cartFunnel },
+    { data: productAnalytics },
   ] = await Promise.all([
     supabase.from("products").select("*", { count: "exact", head: true }),
     supabase
@@ -83,6 +85,13 @@ async function getOverviewData() {
       .limit(5),
     // Cart funnel view
     supabase.from("v_cart_funnel").select("*").single(),
+    // Product analytics for abandoned carts
+    supabase
+      .from("v_product_analytics")
+      .select("product_id, product_title, total_add_to_cart, total_checkout_started, total_checkout_completed, abandoned_carts")
+      .gt("abandoned_carts", 0)
+      .order("abandoned_carts", { ascending: false })
+      .limit(5),
   ])
 
   const totalRevenue =
@@ -133,6 +142,22 @@ async function getOverviewData() {
     uniquePurchasers: Number(cartFunnel?.unique_purchasers ?? 0),
   }
 
+  // Abandoned carts data
+  const abandonedCartsData =
+    productAnalytics?.map((row) => ({
+      productId: row.product_id,
+      productTitle: row.product_title ?? "—",
+      addToCart: Number(row.total_add_to_cart ?? 0),
+      checkoutStarted: Number(row.total_checkout_started ?? 0),
+      checkoutCompleted: Number(row.total_checkout_completed ?? 0),
+      abandoned: Number(row.abandoned_carts ?? 0),
+    })) ?? []
+
+  const totalAbandonedCarts = abandonedCartsData.reduce(
+    (sum, p) => sum + p.abandoned,
+    0,
+  )
+
   const conversionRate =
     funnelData.addToCart > 0
       ? ((funnelData.checkoutCompleted / funnelData.addToCart) * 100).toFixed(1)
@@ -153,6 +178,8 @@ async function getOverviewData() {
     topProductsData,
     funnelData,
     conversionRate,
+    abandonedCartsData,
+    totalAbandonedCarts,
   }
 }
 
@@ -227,6 +254,12 @@ export default async function OverviewPage() {
       description: "Total cadastrados",
     },
     {
+      title: "Carrinhos Abandonados",
+      value: data.totalAbandonedCarts,
+      icon: XCircle,
+      description: "Checkouts não finalizados",
+    },
+    {
       title: "Taxa de Conversão",
       value: `${data.conversionRate}%`,
       icon: TrendingUp,
@@ -274,6 +307,39 @@ export default async function OverviewPage() {
         <TopProducts data={data.topProductsData} />
         <ConversionFunnel data={data.funnelData} />
       </div>
+
+      {/* Abandoned Carts */}
+      {data.abandonedCartsData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Carrinhos Abandonados por Produto</CardTitle>
+            <CardDescription>
+              Produtos com checkouts iniciados mas não finalizados
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {data.abandonedCartsData.map((item) => (
+                <div
+                  key={item.productId}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{item.productTitle}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.addToCart} adições · {item.checkoutStarted} checkouts · {item.checkoutCompleted} compras
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-destructive">
+                    <XCircle className="h-4 w-4" />
+                    <span className="text-sm font-semibold">{item.abandoned}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity */}
       <div className="grid gap-4 lg:grid-cols-2">

@@ -44,7 +44,7 @@ export function OrderStatusSelect({
 
   return (
     <div className="flex items-center gap-2">
-      <Select defaultValue={currentStatus} onValueChange={handleChange} disabled={isPending}>
+      <Select key={currentStatus} defaultValue={currentStatus} onValueChange={handleChange} disabled={isPending}>
         <SelectTrigger className="w-40">
           <SelectValue />
         </SelectTrigger>

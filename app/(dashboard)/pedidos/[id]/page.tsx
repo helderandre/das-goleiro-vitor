@@ -22,6 +22,8 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, MapPin, User, Package } from "lucide-react"
 import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
+import { OrderTrackingCode } from "@/components/order-tracking-code"
+import { OrderPaymentProof } from "@/components/order-payment-proof"
 
 interface ShippingAddress {
   street?: string
@@ -66,6 +68,7 @@ export default async function PedidoDetailPage({
   ])
 
   const address = order.shipping_address as ShippingAddress | null
+  const hasPhysicalItems = items?.some((item) => item.product_type !== "ebook") ?? false
 
   return (
     <div className="space-y-6">
@@ -228,15 +231,33 @@ export default async function PedidoDetailPage({
             </Card>
           )}
 
-          {order.mp_preference_id && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Pagamento</CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader>
+              <CardTitle>Pagamento</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {order.mp_preference_id && (
                 <p className="text-xs text-muted-foreground break-all">
                   MP Preference: {order.mp_preference_id}
                 </p>
+              )}
+              <OrderPaymentProof
+                orderId={order.id}
+                currentUrl={order.payment_proof_url}
+              />
+            </CardContent>
+          </Card>
+
+          {hasPhysicalItems && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Envio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OrderTrackingCode
+                  orderId={order.id}
+                  currentCode={order.tracking_code}
+                />
               </CardContent>
             </Card>
           )}

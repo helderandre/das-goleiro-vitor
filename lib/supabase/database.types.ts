@@ -336,30 +336,36 @@ export type Database = {
           created_at: string | null
           id: string
           mp_preference_id: string | null
+          payment_proof_url: string | null
           shipping_address: Json | null
           short_id: string | null
           status: string | null
           total: number
+          tracking_code: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           mp_preference_id?: string | null
+          payment_proof_url?: string | null
           shipping_address?: Json | null
           short_id?: string | null
           status?: string | null
           total: number
+          tracking_code?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           mp_preference_id?: string | null
+          payment_proof_url?: string | null
           shipping_address?: Json | null
           short_id?: string | null
           status?: string | null
           total?: number
+          tracking_code?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -544,6 +550,22 @@ export type Database = {
           conversion_rate: number | null
           event_date: string | null
           total_revenue: number | null
+        }
+        Relationships: []
+      }
+      v_product_analytics: {
+        Row: {
+          abandoned_carts: number | null
+          last_event_at: string | null
+          product_id: string | null
+          product_title: string | null
+          total_add_to_cart: number | null
+          total_checkout_completed: number | null
+          total_checkout_started: number | null
+          total_remove_from_cart: number | null
+          unique_add_to_cart: number | null
+          unique_checkout_completed: number | null
+          unique_checkout_started: number | null
         }
         Relationships: []
       }
