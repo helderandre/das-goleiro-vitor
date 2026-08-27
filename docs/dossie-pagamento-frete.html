@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossiê Pagamento e Frete Goleiro Vitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f5f7f5;
+    --surface: #ffffff;
+    --surface-2: #eceff0;
+    --ink: #17211d;
+    --ink-2: #4a5852;
+    --ink-3: #7b8781;
+    --line: #d7ddda;
+    --accent: #0f7b5f;
+    --accent-ink: #0a5c47;
+    --accent-soft: #dff0ea;
+    --ok: #1b7a3d;
+    --ok-soft: #e0f2e6;
+    --warn: #9a5b00;
+    --warn-soft: #fbedd3;
+    --crit: #a8322b;
+    --crit-soft: #f9e1df;
+    --code-bg: #eef1f0;
+    --shadow: 0 1px 2px rgba(23,33,29,.06), 0 8px 24px rgba(23,33,29,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1613;
+      --surface: #161f1b;
+      --surface-2: #1d2823;
+      --ink: #e6ece9;
+      --ink-2: #aeb9b3;
+      --ink-3: #7d8983;
+      --line: #2a3630;
+      --accent: #4cc5a3;
+      --accent-ink: #7fdcc0;
+      --accent-soft: #163a30;
+      --ok: #6fd393;
+      --ok-soft: #173424;
+      --warn: #f0b75a;
+      --warn-soft: #3a2a0d;
+      --crit: #f08a82;
+      --crit-soft: #3d1a17;
+      --code-bg: #1b2521;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1613;
+    --surface: #161f1b;
+    --surface-2: #1d2823;
+    --ink: #e6ece9;
+    --ink-2: #aeb9b3;
+    --ink-3: #7d8983;
+    --line: #2a3630;
+    --accent: #4cc5a3;
+    --accent-ink: #7fdcc0;
+    --accent-soft: #163a30;
+    --ok: #6fd393;
+    --ok-soft: #173424;
+    --warn: #f0b75a;
+    --warn-soft: #3a2a0d;
+    --crit: #f08a82;
+    --crit-soft: #3d1a17;
+    --code-bg: #1b2521;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code, pre, .mono { font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; font-size: .88em; color: var(--ink); }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: .84rem; line-height: 1.5; margin: 12px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; max-width: 1240px; margin: 0 auto; padding: 0 28px 96px; }
+  @media (max-width: 960px) { .layout { grid-template-columns: minmax(0,1fr); gap: 0; padding: 0 18px 64px; } .toc { display: none; } }
+
+  .toc { position: sticky; top: 24px; align-self: start; padding-top: 56px; font-size: .86rem; }
+  .toc .eyebrow { margin-bottom: 10px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--line); }
+  .toc a { display: block; padding: 5px 12px; color: var(--ink-2); text-decoration: none; border-left: 2px solid transparent; margin-left: -1px; }
+  .toc a:hover { color: var(--ink); border-left-color: var(--accent); }
+
+  main { min-width: 0; }
+  header.hero { padding: 56px 0 28px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .eyebrow { font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink); }
+  h1 { font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif; font-weight: 700; font-size: clamp(2rem, 4.2vw, 3rem); line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 14px; text-wrap: balance; }
+  h2 { font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif; font-weight: 700; font-size: 1.6rem; letter-spacing: -.015em; line-height: 1.15; margin: 0 0 14px; text-wrap: balance; }
+  h3 { font-size: 1.08rem; font-weight: 600; margin: 28px 0 8px; letter-spacing: -.005em; }
+  h4 { font-size: .95rem; font-weight: 600; margin: 18px 0 6px; color: var(--ink-2); }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; max-width: 76ch; }
+  li { margin-bottom: 5px; }
+  li::marker { color: var(--ink-3); }
+  .lede { font-size: 1.1rem; color: var(--ink-2); max-width: 66ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 18px; font-size: .82rem; color: var(--ink-3); margin-top: 18px; }
+  .meta b { color: var(--ink-2); font-weight: 500; }
+
+  section { padding: 8px 0 36px; border-bottom: 1px solid var(--line); margin-bottom: 36px; scroll-margin-top: 24px; }
+  section:last-of-type { border-bottom: 0; }
+  section > .eyebrow { display: block; margin-bottom: 6px; }
+
+  .verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 22px 0 8px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card .k { font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .card .v { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 1.35rem; margin: 6px 0 4px; letter-spacing: -.01em; line-height: 1.15; }
+  .card p { font-size: .9rem; color: var(--ink-2); margin: 0; }
+  .card.ok { border-top: 3px solid var(--ok); }
+  .card.warn { border-top: 3px solid var(--warn); }
+  .card.crit { border-top: 3px solid var(--crit); }
+  .card.acc { border-top: 3px solid var(--accent); }
+
+  .chip { display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
+  .chip.ok { background: var(--ok-soft); color: var(--ok); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.crit { background: var(--crit-soft); color: var(--crit); }
+  .chip.acc { background: var(--accent-soft); color: var(--accent-ink); }
+  .chip.neutral { background: var(--surface-2); color: var(--ink-2); }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; max-width: 76ch; }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.crit { border-left-color: var(--crit); }
+  .callout .t { font-weight: 600; font-size: .9rem; margin-bottom: 4px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 14px 0 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; background: var(--surface-2); }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  td code { white-space: nowrap; }
+
+  .numbers { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 16px 0 6px; }
+  .numbers .n { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .numbers .n b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .numbers .n span { font-size: .78rem; color: var(--ink-2); line-height: 1.3; display: block; }
+
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 16px 0; max-width: 80ch; }
+  .steps li { counter-increment: step; position: relative; padding: 10px 0 10px 46px; border-bottom: 1px dashed var(--line); margin: 0; }
+  .steps li:last-child { border-bottom: 0; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: 10px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; display: grid; place-items: center; font-size: .9rem; }
+  .steps li b { display: block; }
+  .steps li .who { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+
+  .phases { display: grid; gap: 12px; margin: 16px 0; }
+  .phase { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .phase .num { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 1.6rem; color: var(--accent); line-height: 1; letter-spacing: -.02em; }
+  .phase h4 { margin: 0 0 4px; color: var(--ink); font-size: 1rem; }
+  .phase p, .phase ul { font-size: .9rem; margin-bottom: 6px; }
+  .phase ul { margin-bottom: 0; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .kv { font-size: .9rem; }
+  .kv dt { font-weight: 600; margin-top: 10px; }
+  .kv dd { margin: 2px 0 0; color: var(--ink-2); }
+
+  .src { font-size: .82rem; columns: 2; column-gap: 28px; }
+  .src li { break-inside: avoid; margin-bottom: 6px; }
+  @media (max-width: 720px) { .src { columns: 1; } }
+  .src a { word-break: break-all; }
+
+  pre.mermaid { background: var(--surface); border: 1px solid var(--line); text-align: center; }
+  .foot { font-size: .8rem; color: var(--ink-3); margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="toc" aria-label="Sumário">
+    <div class="eyebrow">Sumário</div>
+    <ol>
+      <li><a href="#resumo">Veredito</a></li>
+      <li><a href="#hoje">Onde o projeto está</a></li>
+      <li><a href="#fluxo">Fluxo ponta a ponta</a></li>
+      <li><a href="#mp">Mercado Pago</a></li>
+      <li><a href="#me">Melhor Envio</a></li>
+      <li><a href="#dashboard">Ações do dashboard</a></li>
+      <li><a href="#schema">Banco de dados</a></li>
+      <li><a href="#site">Mudanças no site</a></li>
+      <li><a href="#infra">Cloudflare e Supabase</a></li>
+      <li><a href="#pendencias">Pendências do cliente</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#fontes">Fontes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Loja Goleiro Vitor · pesquisa verificada nas documentações oficiais</div>
+      <h1>Mercado Pago e Melhor Envio: como ligar pagamento e frete ao ecommerce e ao dashboard</h1>
+      <p class="lede">Frete cotado no Melhor Envio antes do pagamento, cobrança no Mercado Pago com produto + frete, confirmação por webhook, etiqueta e rastreio gerados pelo dashboard — e os caminhos de pedido manual, cancelamento e reembolso.</p>
+      <div class="meta">
+        <span><b>Método</b> 9 áreas pesquisadas · cada fato re-checado por um revisor cético · 1.258 consultas às docs</span>
+        <span><b>Data</b> 27 ago 2026</span>
+        <span><b>Docs</b> mercadopago.com.br/developers · docs.melhorenvio.com.br</span>
+      </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <section id="resumo">
+      <span class="eyebrow">Veredito</span>
+      <h2>As duas integrações são viáveis. O que bloqueia não é a API — é o que falta no projeto e na conta do cliente.</h2>
+
+      <div class="verdict">
+        <div class="card ok">
+          <div class="k">Mercado Pago</div>
+          <div class="v">Checkout Pro</div>
+          <p>Preferência + redirect. Sem PCI, cobre Pix, cartão, boleto e saldo MP. O mesmo link (<code>init_point</code>) serve para cobrar pedidos criados no dashboard. SDK Node testado rodando em Cloudflare Workers.</p>
+        </div>
+        <div class="card ok">
+          <div class="k">Melhor Envio</div>
+          <div class="v">Viável, via aplicativo OAuth</div>
+          <p>Cotação, etiqueta, rastreio e webhooks existem e estão documentados. Exige app OAuth (não token do painel) para receber webhooks, saldo na Melhor Carteira e conta verificada.</p>
+        </div>
+        <div class="card warn">
+          <div class="k">Bloqueio técnico</div>
+          <div class="v">Schema e site</div>
+          <p>Produtos não têm peso/dimensões; o pedido não guarda frete, CPF nem telefone do destinatário; não há tabela de eventos. O site público precisa mudar antes de qualquer etiqueta.</p>
+        </div>
+        <div class="card crit">
+          <div class="k">Bloqueio de negócio</div>
+          <div class="v">3 respostas do cliente</div>
+          <p>Regime fiscal do remetente (NF-e ou declaração de conteúdo), quem será o titular PF da conta Melhor Envio, e KYC concluído na conta Mercado Pago.</p>
+        </div>
+      </div>
+
+      <h3>Decisões que a pesquisa fecha</h3>
+      <ul>
+        <li><b>Frete entra como item da preferência</b> (“Frete – PAC”), nunca em <code>shipments.cost</code>: a referência diz que <code>shipments.mode: custom</code> “não está disponível para Checkout Pro”.</li>
+        <li><b>Um único receptor de webhooks, no dashboard</b> (Cloudflare Workers, service role do Supabase). A <code>notification_url</code> da preferência tem prioridade sobre o painel — site e dashboard devem apontar para a mesma URL.</li>
+        <li><b>“Link de pagamento” do painel do MP não é integrável</b>: não tem API nem webhooks. O equivalente programático é a preferência do Checkout Pro.</li>
+        <li><b>Melhor Envio por aplicativo OAuth</b>, não token pessoal: webhooks só disparam para etiquetas geradas pelo mesmo app; token pessoal não tem refresh nem webhook.</li>
+        <li><b>Total sempre recalculado no servidor</b>: o site grava pedidos com <code>anon key</code>, então <code>orders.total</code> hoje é editável pelo cliente. A preferência precisa nascer de <code>products</code> + re-cotação do frete.</li>
+        <li><b>Manter os 5 status atuais</b> do pedido (contrato do site) e adicionar <code>payment_status</code> e <code>shipment_status</code> separados, em vez de inflar o enum.</li>
+        <li><b>Estoque reservado na criação do pedido</b> com <code>UPDATE … WHERE stock &gt;= qty</code> numa função Postgres, liberado em cancelamento/expiração — não no “pago”.</li>
+      </ul>
+
+      <h3>Números que moldam o código</h3>
+      <div class="numbers">
+        <div class="n"><b>22 s</b><span>prazo para responder 200 ao webhook do MP</span></div>
+        <div class="n"><b>6 s</b><span>prazo do webhook do Melhor Envio (5 tentativas)</span></div>
+        <div class="n"><b>180 dias</b><span>janela de reembolso no MP após aprovação</span></div>
+        <div class="n"><b>30 / 45 dias</b><span>access / refresh token OAuth do ME</span></div>
+        <div class="n"><b>250 req/min</b><span>rate limit do ME por usuário</span></div>
+        <div class="n"><b>7 dias</b><span>prazo seguro para postar etiqueta Correios</span></div>
+        <div class="n"><b>3 → 50</b><span>etiquetas simultâneas: conta ME não verificada → verificada</span></div>
+        <div class="n"><b>64 / 248 / 13</b><span>chars: external_reference / notification_url / statement_descriptor</span></div>
+        <div class="n"><b>0,99 %</b><span>tarifa Pix no checkout MP (crédito 3,98–4,98 %)</span></div>
+        <div class="n"><b>R$ 10.000</b><span>saldo fictício do sandbox do ME</span></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="hoje">
+      <span class="eyebrow">Estado atual</span>
+      <h2>Onde o projeto está hoje</h2>
+      <p>Este repositório é só o dashboard admin. O site público (loja) é outro projeto Next.js, não disponível nesta máquina, que grava no mesmo Supabase. Nada de Mercado Pago ou Melhor Envio foi implementado em nenhum dos dois; o único vestígio é a coluna <code>orders.mp_preference_id</code>, exibida como texto.</p>
+      <div class="two">
+        <dl class="kv">
+          <dt>Pedidos</dt>
+          <dd>Criados exclusivamente pelo site, com <code>anon key</code> + RLS. O dashboard só faz SELECT/UPDATE (<code>app/(dashboard)/pedidos/actions.ts</code>). Não existe criação manual.</dd>
+          <dt>Pagamento</dt>
+          <dd>Admin sobe comprovante (bucket <code>payment-proofs</code>) e troca o status na mão. Sem validação de transição; status é texto livre duplicado em 6 arquivos.</dd>
+          <dt>Frete</dt>
+          <dd><code>tracking_code</code> é campo de texto; o site monta link para linkcorreios. <code>products</code> não tem peso nem dimensões.</dd>
+        </dl>
+        <dl class="kv">
+          <dt>Infra</dt>
+          <dd>Next 16 + OpenNext em Workers (<code>nodejs_compat</code>, compatibility_date 2025-04-01). Não existe <code>app/api</code>; o middleware de auth cobre todas as rotas — um webhook seria redirecionado para <code>/login</code>.</dd>
+          <dt>Segredos</dt>
+          <dd>Só <code>NEXT_PUBLIC_SUPABASE_*</code> via <code>process.env</code>. Sem service role, sem <code>.env</code>; o <code>.gitignore</code> ignora apenas <code>.env*.local</code>.</dd>
+          <dt>Deploy</dt>
+          <dd><code>wrangler versions upload</code> — publica versão sem ativar; Cron Triggers só entram com <code>wrangler triggers deploy</code>.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="fluxo">
+      <span class="eyebrow">Arquitetura</span>
+      <h2>Fluxo ponta a ponta</h2>
+      <p>O site cota e cobra; o dashboard confirma, envia e acompanha. Toda escrita privilegiada (webhooks, etiquetas, reembolsos) fica no dashboard, único lugar onde a service role key deve existir.</p>
+
+      <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant C as Cliente
+  participant S as Site (server)
+  participant DB as Supabase
+  participant ME as Melhor Envio
+  participant MP as Mercado Pago
+  participant D as Dashboard (Workers)
+  C->>S: informa CEP
+  S->>ME: POST /me/shipment/calculate
+  ME-->>S: serviços com custom_price e prazo
+  C->>S: escolhe frete e fecha o pedido
+  S->>ME: re-cota e confirma o preço
+  S->>DB: rpc create_order (reserva estoque, congela cotação)
+  S->>MP: POST /checkout/preferences (itens + item Frete)
+  MP-->>S: init_point
+  S-->>C: redirect para o Checkout Pro
+  C->>MP: paga (Pix, cartão, boleto)
+  MP->>D: webhook payment (x-signature)
+  D->>MP: GET /v1/payments/{id}
+  D->>DB: orders.status = paid
+  D->>ME: cart → checkout → generate → print
+  ME->>D: webhook order.posted (tracking)
+  D->>DB: tracking_code, status = shipped
+  C->>S: acompanha no Melhor Rastreio
+      </pre>
+
+      <ol class="steps">
+        <li><span class="who">Site</span><b>Cotação pelo CEP</b>Só itens físicos entram em <code>products[]</code> (id, dimensões em cm inteiros, peso em kg, <code>insurance_value</code> = preço com desconto, quantity). Filtrar serviços que voltam com <code>error</code>; exibir <code>custom_price</code> e <code>custom_delivery_range</code> em dias úteis. Cache de 15 min por hash (CEP + itens). Pedido só de e-book pula esta etapa.</li>
+        <li><span class="who">Site</span><b>Fechamento do pedido</b>Re-cotar no servidor imediatamente antes de criar a preferência; se <code>custom_price</code> mudou, devolver a nova cotação ao cliente. Chamar uma função Postgres que insere <code>orders</code> + <code>order_items</code>, recalcula preços a partir de <code>products</code>, reserva estoque e grava o snapshot da cotação (<code>shipping_quote</code>, <code>shipping_cost</code>, <code>subtotal</code>). Coletar nome, CPF, telefone e e-mail do destinatário — obrigatórios para a etiqueta.</li>
+        <li><span class="who">Site</span><b>Preferência do Checkout Pro</b><code>items</code> = produtos (preço já com desconto) + item “Frete – PAC”; <code>external_reference = orders.id</code>; <code>notification_url</code> = webhook do dashboard; <code>back_urls</code> HTTPS; <code>auto_return: approved</code>; <code>expires</code> + <code>expiration_date_to</code> (24 h sem boleto, 3 dias com boleto); <code>statement_descriptor</code> ≤ 13 chars. Salvar <code>mp_preference_id</code> e redirecionar para <code>init_point</code>.</li>
+        <li><span class="who">Dashboard</span><b>Webhook de pagamento</b>Validar <code>x-signature</code>, gravar o evento, responder 200, buscar <code>GET /v1/payments/{id}</code>, localizar o pedido por <code>external_reference</code>, conferir <code>transaction_amount ≥ total</code> e aplicar a transição (tabela na seção Mercado Pago). Pix e boleto não aprovam pelo redirect — só pelo webhook.</li>
+        <li><span class="who">Dashboard</span><b>Etiqueta</b>Botão “Gerar etiqueta” em pedido <code>paid</code> com item físico: conferir saldo (<code>GET /me/balance</code>) → <code>POST /me/cart</code> com a cotação congelada (1 chamada por pacote nos Correios) → <code>checkout</code> → <code>generate</code> (assíncrono; aguardar) → <code>print</code> com <code>mode: public</code>. Persistir o <code>id</code> do ME: é a única chave para tudo depois.</li>
+        <li><span class="who">Dashboard</span><b>Rastreio</b>Webhook <code>order.posted</code> → <code>shipped</code> + <code>tracking_url</code>; <code>order.delivered</code> → <code>delivered</code>. O código da transportadora pode chegar até 1 dia útil depois sem novo webhook — polling a cada 2 h em <code>POST /me/shipment/tracking</code> cobre isso e etiquetas geradas fora do app.</li>
+        <li><span class="who">Site</span><b>Acompanhamento</b>Exibir o status derivado, o código (transportadora ou, na falta, o código ME) e o link do Melhor Rastreio. Nunca mostrar o protocolo <code>ORD-…</code>. O Melhor Rastreio já envia e-mails de movimentação ao destinatário se <code>to.email</code> for preenchido.</li>
+      </ol>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="mp">
+      <span class="eyebrow">Mercado Pago</span>
+      <h2>Mercado Pago: o que a documentação confirma</h2>
+
+      <h3>Modelo de integração</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Opção</th><th>Como funciona</th><th>PCI</th><th>Quando usar aqui</th></tr></thead>
+        <tbody>
+          <tr><td><b>Checkout Pro</b> <span class="chip ok">recomendado</span></td><td><code>POST /checkout/preferences</code> → redirect para <code>init_point</code>. MP cuida do formulário, antifraude e 3DS.</td><td>SAQ A</td><td>Loja (fase 1) e cobrança à distância de pedidos manuais.</td></tr>
+          <tr><td><b>Checkout Bricks</b></td><td>Componentes no seu site (Payment Brick); backend cria o pagamento.</td><td>SAQ A</td><td>Fase 2, se a conversão pedir checkout sem redirect.</td></tr>
+          <tr><td><b>Orders API</b> (<code>POST /v1/orders</code>)</td><td>Novo modelo do Checkout Transparente, “Recommended”. 1 transação por order. Único lugar onde Pix de teste aprova (<code>payer.first_name = APRO</code>).</td><td>SAQ A</td><td>Pix direto no dashboard (“cliente reservou e paga agora”). Não aceita credenciais de teste.</td></tr>
+          <tr><td>Payments API (<code>POST /v1/payments</code>)</td><td>Em modo manutenção para Checkout Transparente (“não receberá novas funcionalidades”).</td><td>SAQ A</td><td>Só como fallback; reembolso/cancelamento usam estes endpoints em todos os modelos.</td></tr>
+          <tr><td>Link de pagamento (painel)</td><td>Produto sem API e sem webhooks.</td><td>—</td><td>Não usar.</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout">
+        <div class="t">SDK Node <code>mercadopago</code> no Cloudflare Workers <span class="chip ok">testado</span></div>
+        <p>Versão 3.6.0, sem dependências, usa <code>fetch</code> global. Um Worker com a mesma config do repo (<code>nodejs_compat</code>, compatibility_date 2025-04-01) carregou o SDK, chegou à API e validou assinatura. Exigir <code>&gt;= 3.3.0</code> (correções no validador de webhook). Importar só em código server-only — nunca no middleware, que roda no wrapper edge. Alternativa igualmente viável: wrapper <code>fetch</code> de ~80 linhas. Detalhe do SDK: <code>requestOptions</code> vazam para a instância de <code>MercadoPagoConfig</code> — criar uma instância por request.</p>
+      </div>
+
+      <h3>Preferência: campos e limites que importam</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Campo</th><th>Regra verificada</th><th>Uso no projeto</th></tr></thead>
+        <tbody>
+          <tr><td><code>items[]</code></td><td>Obrigatório; <code>unit_price</code> com até 2 casas; <code>picture_url</code> HTTPS.</td><td>Produtos com desconto aplicado + item “Frete – &lt;serviço&gt;”.</td></tr>
+          <tr><td><code>shipments</code></td><td><code>mode: custom</code> e <code>cost</code> “não disponíveis para Checkout Pro”.</td><td>Enviar só <code>receiver_address</code> (antifraude). Omitir em pedido só de e-book.</td></tr>
+          <tr><td><code>external_reference</code></td><td>≤ 64 chars, apenas <code>[A-Za-z0-9_-]</code>.</td><td><code>orders.id</code> (UUID, 36 chars).</td></tr>
+          <tr><td><code>notification_url</code></td><td>HTTPS, ≤ 248 chars, tem prioridade sobre o painel, não é validada.</td><td>Sempre a URL do dashboard.</td></tr>
+          <tr><td><code>back_urls</code> / <code>auto_return</code></td><td>HTTPS obrigatório (http é descartado em silêncio). <code>auto_return</code> só redireciona cartão aprovado; Pix/boleto caem em <code>pending</code>. Sem localhost.</td><td>Página de retorno lê <code>status</code>, <code>payment_id</code>, <code>external_reference</code> e mostra “aguardando” — nunca marca pago.</td></tr>
+          <tr><td><code>statement_descriptor</code></td><td>≤ 13 caracteres.</td><td><code>GOLEIROVITOR</code> (12).</td></tr>
+          <tr><td><code>expires</code> + <code>expiration_date_to</code></td><td>ISO 8601 com offset. Boleto precisa de ~3 dias.</td><td>24 h (sem boleto) / 3 dias (com boleto), alinhado à reserva de estoque.</td></tr>
+          <tr><td><code>payment_methods</code></td><td><code>installments</code> 1–36 (só o máximo); <code>excluded_payment_types</code>; saldo em conta não pode ser excluído.</td><td>Excluir <code>ticket</code> em pedidos só de e-book. Parcelamento sem juros é configuração da conta, não da API.</td></tr>
+          <tr><td><code>binary_mode</code></td><td>true impede Pix/boleto.</td><td>Deixar false.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Webhook: algoritmo e regras</h3>
+      <p>Tópico <code>payment</code> é obrigatório; <code>topic_merchant_order_wh</code>, <code>topic_chargebacks_wh</code>, <code>topic_claims_integration_wh</code> e <code>stop_delivery_op_wh</code> (fraude, sem retry) são úteis. IPN está sendo descontinuado e não valida assinatura — ignorar.</p>
+      <pre><code>// manifest — data.id vem da QUERY STRING, não do body
+const dataId = url.searchParams.get("data.id") ?? "";
+const [ts, v1] = parse(req.headers.get("x-signature")); // "ts=…,v1=…"
+const manifest = [
+  dataId && `id:${dataId}`,          // minúsculas se alfanumérico (doc); SDK usa caixa original — tentar ambos
+  xRequestId && `request-id:${xRequestId}`,
+  `ts:${ts}`,
+].filter(Boolean).join(";") + ";";    // o ';' final é o erro mais comum
+const expected = hex(HMAC_SHA256(MP_WEBHOOK_SECRET, manifest));
+timingSafeEqual(expected, v1);        // comparar byteLength antes</code></pre>
+      <ul>
+        <li><b>Payload não traz status.</b> Sempre <code>GET /v1/payments/{id}</code> e decidir pelo <code>status</code> retornado; <code>action</code> serve só para log.</li>
+        <li><b>200/201 em &lt; 22 s</b>, senão reenvio em 15 min, 30 min, 6 h, 48 h, 96 h ×3. Sem garantia de ordem nem deduplicação: idempotência por <code>(data.id, x-request-id)</code> e transições monotônicas (nunca regredir <code>paid → pending</code>).</li>
+        <li><b><code>ts</code> está em milissegundos</b> na doc; o <code>toleranceSeconds</code> do SDK assume segundos e rejeitaria tudo — não usar; implementar anti-replay próprio (|now − ts| &gt; 5 min → rejeitar).</li>
+        <li><b>Testes:</b> pagamentos com credenciais de teste via <code>notification_url</code> não notificam. Usar a “URL de teste” do painel e o botão Simular (envia <code>live_mode: false</code> e um Data ID arbitrário → tratar 404 do GET como “ignorar e responder 200”).</li>
+        <li><b>Responder e processar depois:</b> no Workers, <code>getCloudflareContext().ctx.waitUntil()</code> estende até 30 s após a resposta. Gravar o evento antes de responder; reprocessar <code>processed_at IS NULL</code> por cron.</li>
+      </ul>
+
+      <h4>Mapeamento status do pagamento → pedido</h4>
+      <div class="table-wrap"><table>
+        <thead><tr><th>MP <code>status</code></th><th>Significado</th><th><code>orders.status</code></th><th><code>payment_status</code> / ação</th></tr></thead>
+        <tbody>
+          <tr><td><code>approved</code></td><td>Creditado</td><td><code>paid</code> (se <code>transaction_amount ≥ total</code>)</td><td>salvar <code>mp_payment_id</code>, método, <code>paid_at</code>; liberar e-book</td></tr>
+          <tr><td><code>pending</code> / <code>in_process</code> / <code>authorized</code></td><td>Aguardando Pix/boleto, em análise</td><td><code>pending</code></td><td>gravar <code>status_detail</code></td></tr>
+          <tr><td><code>rejected</code></td><td>Recusado; cliente pode tentar de novo no mesmo <code>init_point</code></td><td><code>pending</code> (não cancelar)</td><td>gravar motivo (<code>cc_rejected_*</code>)</td></tr>
+          <tr><td><code>cancelled</code></td><td>Expirado (30 dias), pelo vendedor ou pelo pagador</td><td><code>cancelled</code></td><td>liberar estoque</td></tr>
+          <tr><td><code>refunded</code></td><td>Devolvido (inclusive pelo painel ou BPP)</td><td><code>cancelled</code></td><td><code>refunded</code>; conciliar com <code>GET …/refunds</code></td></tr>
+          <tr><td><code>approved</code> + <code>partially_refunded</code></td><td>Reembolso parcial</td><td>mantém</td><td><code>partially_refunded</code>, <code>refunded_amount</code></td></tr>
+          <tr><td><code>charged_back</code> / <code>in_mediation</code></td><td>Contestação / disputa — dinheiro retido</td><td>mantém</td><td><code>needs_attention</code>; <b>não gerar etiqueta</b></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Cancelar e reembolsar</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Operação</th><th>Endpoint</th><th>Regras verificadas</th></tr></thead>
+        <tbody>
+          <tr><td>Cancelar pagamento não aprovado</td><td><code>PUT /v1/payments/{id}</code> <code>{"status":"cancelled"}</code></td><td>Só <code>pending</code>, <code>in_process</code>, <code>authorized</code> (erro 2018 fora disso). Boleto/Pix não pagos expiram sozinhos em 30 dias.</td></tr>
+          <tr><td>“Cancelar” preferência</td><td><code>PUT /checkout/preferences/{id}</code></td><td>Não existe DELETE: <code>expires: true</code> + <code>expiration_date_to</code> = agora. Não cancela pagamento já criado.</td></tr>
+          <tr><td>Reembolso total</td><td><code>POST /v1/payments/{id}/refunds</code> (body vazio)</td><td rowspan="2"><code>X-Idempotency-Key</code> obrigatório (erro 4292); ≤ 180 dias da aprovação (erro 2024/15016); exige saldo disponível na conta MP (senão <code>rejected</code>); cartão volta na fatura, Pix na conta do pagador; débito virtual Caixa: 24 h. Pix pode ficar <code>in_process</code> → enviar <code>X-Render-In-Process-Refunds: true</code> e tratar como assíncrono. Nem toda transação aceita parcial (erro 3024). Central de Ajuda diz que a tarifa é estornada — confirmar em <code>fee_details</code> antes de prometer na UI.</td></tr>
+          <tr><td>Reembolso parcial</td><td><code>POST /v1/payments/{id}/refunds</code> <code>{"amount": 59.90}</code></td></tr>
+          <tr><td>Chargeback</td><td><code>GET /v1/chargebacks/{id}</code> · <code>POST …/documentation</code></td><td>Webhook <code>topic_chargebacks_wh</code>; anexar comprovante (jpg/png/pdf ≤ 10 MB) até <code>date_documentation_deadline</code>. Proteção ao Vendedor cobre só produto físico com rastreio + tela do pedido (+ NF acima de R$ 450). E-books não são cobertos.</td></tr>
+          <tr><td>Conciliação</td><td><code>GET /v1/payments/search?external_reference=…</code></td><td>Intervalo &lt; 365 dias; a mesma busca repetida no mesmo minuto dá erro 2001. Botão “Verificar pagamento” no dashboard.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Pedido criado no dashboard</h3>
+      <p>Mesma preferência do Checkout Pro, com <code>payer</code> pré-preenchido (nome, e-mail, CPF, telefone), <code>expires</code> de 3–7 dias e <code>external_reference = orders.id</code>. O admin copia o <code>init_point</code> e envia por WhatsApp/e-mail; o webhook confirma como qualquer outro pedido. Para “cliente na frente do admin pagando por Pix agora”, a Orders API devolve <code>qr_code</code>, <code>qr_code_base64</code> e <code>ticket_url</code> (validade padrão 24 h, entre 30 min e 30 dias) exigindo só <code>payer.email</code> + <code>external_reference</code> — sem CPF.</p>
+
+      <h3>Credenciais, testes e tarifas</h3>
+      <div class="two">
+        <div>
+          <h4>Conta e aplicação</h4>
+          <ul>
+            <li>Uma aplicação (“Pagamentos online → loja própria → Checkout Pro”). Credenciais de teste vêm prontas; produção exige ativar com indústria + URL e identidade validada — senão a preferência falha com <code>collector_does_not_comply_with_current_regulation</code>.</li>
+            <li>Token de teste também começa com <code>APP_USR-</code>: não detectar ambiente por prefixo; usar <code>live_mode</code>.</li>
+            <li>Não há host de sandbox: mesma <code>api.mercadopago.com</code>. <code>sandbox_init_point</code> está marcado “não utilize”.</li>
+            <li>Segredos: <code>MP_ACCESS_TOKEN</code> e <code>MP_WEBHOOK_SECRET</code> só no Worker. OAuth não é necessário (vendedor único).</li>
+            <li>Compartilhar credenciais com a conta Mube (até 10 compartilhamentos) em vez de pedir login do cliente.</li>
+          </ul>
+          <h4>Testes</h4>
+          <ul>
+            <li>Comprador de teste em aba anônima; cartões de teste com titular <code>APRO</code> / <code>CONT</code> / <code>OTHE</code> e CPF 12345678909.</li>
+            <li><b>Pix e boleto nunca aprovam em sandbox no Checkout Pro</b> — ficam <code>pending</code>. O fluxo “pago por Pix” só se valida com o simulador do painel ou uma venda real de valor baixo.</li>
+            <li>“Qualidade da integração” (mínimo 73 pontos) só roda com um pagamento de produção.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Tarifas do checkout (Central de Ajuda 33399)</h4>
+          <div class="table-wrap"><table style="min-width: 0">
+            <thead><tr><th>Meio</th><th class="num">Na hora</th><th class="num">14 dias</th><th class="num">30 dias</th></tr></thead>
+            <tbody>
+              <tr><td>Cartão de crédito</td><td class="num">4,98 %</td><td class="num">4,49 %</td><td class="num">3,98 %</td></tr>
+              <tr><td>Saldo MP / Linha de Crédito</td><td class="num">4,99 %</td><td class="num">4,49 %</td><td class="num">3,99 %</td></tr>
+              <tr><td>Débito virtual Caixa</td><td class="num">3,99 %</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td>Pix</td><td class="num">0,99 %</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td>Boleto</td><td class="num" colspan="3">R$ 3,49 fixo (até 3 dias)</td></tr>
+            </tbody>
+          </table></div>
+          <p style="font-size:.86rem">Conta nova recebe em 7 dias no início. “Parcelado vendedor” (sem juros para o cliente) custa taxa extra por nº de parcelas (2x ≈ 2 % … 12x ≈ 15–17 %) e é configurado em Taxas e parcelas, não pela API. A tabela real da conta do cliente pode divergir — confirmar na tela.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="me">
+      <span class="eyebrow">Melhor Envio</span>
+      <h2>Melhor Envio: viabilidade confirmada, com condições</h2>
+      <p>API v2 em <code>https://melhorenvio.com.br/api/v2</code> (sandbox em <code>sandbox.melhorenvio.com.br</code>). Sem SDK oficial JS — só PHP; um wrapper <code>fetch</code> resolve. Todas as chamadas exigem <code>Authorization: Bearer</code>, <code>Accept</code>/<code>Content-Type: application/json</code> e <b><code>User-Agent: "Goleiro Vitor Loja (email)"</code></b>. O runtime real do Workers não envia User-Agent por padrão (o Miniflare envia): funciona em dev e falha em produção se não for setado explicitamente.</p>
+
+      <h3>Autenticação: aplicativo OAuth vs token do painel</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th></th><th>Aplicativo OAuth (Área Dev) <span class="chip ok">recomendado</span></th><th>Token pessoal (Permissões de Acesso)</th></tr></thead>
+        <tbody>
+          <tr><td>Validade</td><td>access 30 dias / refresh 45 dias (renovação automática por cron; refresh rotaciona)</td><td>~1 ano (resposta de fórum, não documentado), sem refresh — expira em silêncio com <code>Unauthenticated.</code></td></tr>
+          <tr><td>Webhooks</td><td>Sim — cadastrados no painel do app; só para etiquetas geradas por esse app</td><td>Não; rastreio só por polling</td></tr>
+          <tr><td>Configurações de cotação do painel</td><td>Sim (<code>custom_price</code>, transportadoras habilitadas por app)</td><td>Parcial</td></tr>
+          <tr><td>Esforço</td><td>Rota <code>/api/melhorenvio/connect</code> + callback + tabela de tokens</td><td>Colar token em secret</td></tr>
+        </tbody>
+      </table></div>
+      <p>Escopos necessários: <code>shipping-calculate cart-read cart-write shipping-checkout shipping-generate shipping-preview shipping-print shipping-cancel shipping-tracking shipping-companies orders-read users-read transactions-read ecommerce-shipping</code>. Não existem escopos <code>webhooks-*</code>. Um MVP pode começar com token pessoal sem mudar o wrapper e migrar para OAuth antes de ativar rastreio automático.</p>
+
+      <div class="callout warn">
+        <div class="t">Conta e carteira — condições operacionais</div>
+        <ul style="margin-bottom:0">
+          <li>Conta de produção é obrigatoriamente <b>pessoa física</b> (CPF + selfie com documento); o CNPJ da loja entra como “Loja” vinculada com endereço principal. Definir o titular.</li>
+          <li>O checkout da etiqueta <b>debita a Melhor Carteira</b>; sem saldo a compra falha (erro não documentado). Saldo via Pix/boleto no painel ou <code>POST /me/balance</code>. Repesagem gera débito e pode bloquear novas etiquetas.</li>
+          <li><b>Limite de envios simultâneos</b>: 3 etiquetas geradas e não postadas sem verificação de conta; até 50 verificada. A conta precisa passar pela verificação antes de operar.</li>
+          <li>Transportadoras precisam ser <b>habilitadas por aplicativo</b> no painel (Integrações → Catálogo → Aplicativos Autorizados → Transportadoras e Serviços), senão a cotação volta vazia.</li>
+        </ul>
+      </div>
+
+      <h3>Cotação — <code>POST /api/v2/me/shipment/calculate</code></h3>
+      <ul>
+        <li><b>Payload:</b> <code>from.postal_code</code>, <code>to.postal_code</code>, <code>products[]</code> {id, width, height, length (cm inteiros), weight (kg), insurance_value (2 casas), quantity ≤ 100} — o ME empacota e devolve <code>packages[]</code>. Alternativa <code>volumes[]</code> (campo de seguro é <code>insurance</code>). Nunca os dois juntos. <code>services: "1,2,17"</code> opcional; omitir deixa o painel do app decidir.</li>
+        <li><b>Resposta:</b> array, 1 item por serviço; preços como <b>string</b>; usar <code>custom_price</code>/<code>custom_delivery_range</code> (refletem acréscimos do painel); prazo em dias úteis sem contar a postagem. Serviço indisponível vem no mesmo array com <code>error</code> e sem <code>price</code> — filtrar.</li>
+        <li><b>IDs:</b> Correios 1 PAC, 2 SEDEX, 17 Mini Envios; Jadlog 3 .Package, 4 .Com, 27 Centralizado. Nunca validar por nome. Sandbox só tem Correios e Jadlog.</li>
+        <li><b>Restrições Correios (API):</b> caixa mínima 11 × 2 × 16 cm, máx 105 cm/lado, soma ≤ 200, 30 kg. Mini Envios ≤ 300 g, ≤ 24 × 16 × 2 cm, seguro ≤ R$ 100. Um livro fino cabe em Mini Envios; padronizar dimensões mínimas no cadastro.</li>
+        <li><b>Correios, J&amp;T, Loggi e Jadlog Centralizado não aceitam múltiplos volumes</b>: se <code>packages.length &gt; 1</code>, são n inserções no carrinho (o plugin oficial simplesmente oculta cotações Correios com ≥ 2 pacotes).</li>
+        <li><b>Sem TTL de cotação documentado.</b> Tabelas dos Correios mudam; o preço só congela ao inserir no carrinho. Daí: re-cotar no checkout e comparar <code>cart.price</code> com <code>shipping_cost</code> após o pagamento — diferença para cima vira <code>needs_attention</code>.</li>
+      </ul>
+
+      <h3>Etiqueta — carrinho → pagamento → geração → impressão</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Passo</th><th>Endpoint</th><th>O que verificar</th></tr></thead>
+        <tbody>
+          <tr><td>Saldo</td><td><code>GET /me/balance</code></td><td><code>{balance, reserved, debts}</code>. Avisar/recarregar se &lt; custo da etiqueta.</td></tr>
+          <tr><td>Carrinho</td><td><code>POST /me/cart</code></td><td><code>service</code>; <code>from</code>/<code>to</code> com nome, endereço, <b>document (CPF) ou company_document (CNPJ)</b> — Correios exige documento do destinatário (sandbox ao vivo), Jadlog exige telefone; <code>products[]</code> {name, quantity, unitary_value} <b>obrigatório e correto desde 06/04/2026</b> (o ME emite a DC-e na SEFAZ com esses dados); <code>volumes[]</code> copiados de <code>packages[]</code>; <code>options</code> {insurance_value = soma dos físicos, receipt: false, own_hand: false, reverse: false, non_commercial, invoice.key só se comercial, platform, tags: [{tag: short_id, url: link do pedido}]}. Não enviar <code>agency</code> para Correios/Jadlog. Resposta 201 traz o <b><code>id</code> UUID — única chave</b> (a busca não pesquisa por tag). Imutável: para alterar, DELETE e reinserir.</td></tr>
+          <tr><td>Pagamento</td><td><code>POST /me/shipment/checkout</code> <code>{orders:[id]}</code></td><td>Debita a carteira; status → <code>released</code>; 422 se já paga. Alternativa <code>gateway</code> + <code>redirect</code> para pagar fora.</td></tr>
+          <tr><td>Geração</td><td><code>POST /me/shipment/generate</code></td><td>Assíncrono: aguardar/poll (<code>generated_at</code>) antes de imprimir. Após gerar, a DC-e trava.</td></tr>
+          <tr><td>Impressão</td><td><code>POST /me/shipment/print</code> <code>{mode:"public"}</code> ou <code>GET /me/imprimir/pdf/{id}</code></td><td>Link público abre sem login; privado exige a conta do ME no navegador do admin. Sandbox só imprime arquivo para Jadlog.</td></tr>
+          <tr><td>Postagem</td><td>—</td><td>Não há coleta pelo ME para Correios/Jadlog: o admin leva à agência/Pegaki com NF ou DC. <code>shipped</code> só no evento <code>order.posted</code>, não na geração.</td></tr>
+          <tr><td>Cancelar etiqueta</td><td><code>POST /me/shipment/cancellable</code> → <code>POST /me/shipment/cancel</code> <code>{order:{id, reason_id:"2", description}}</code></td><td>Cancelável até a transportadora ser notificada/postagem. Valor volta para a <b>carteira da loja</b> (~12 h se já gerada) — nunca para o cliente.</td></tr>
+          <tr><td>Devolução</td><td><code>POST /me/cart/reverse</code></td><td>Logística reversa, só Correios, 1 volume; informar <code>order_id</code> do envio original. Não funciona no sandbox.</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout crit">
+        <div class="t">Fiscal: NF-e ou Declaração de Conteúdo?</div>
+        <p>Envio comercial exige <code>options.invoice.key</code> (chave NF-e de 44 dígitos) e IE do remetente. Envio não comercial (<code>non_commercial: true</code>, sem <code>invoice</code>, <code>state_register</code> vazio/“ISENTO”) só é permitido a pessoa física ou PJ <b>não contribuinte de ICMS</b>; MEI que vende deve emitir NF-e. Livros têm imunidade tributária, mas a obrigação acessória continua. Sem essa resposta o <code>POST /me/cart</code> não pode ser implementado corretamente — e, se for NF-e, o dashboard precisa de um emissor integrado.</p>
+      </div>
+
+      <h3>Prazos de validade da etiqueta <span class="chip warn">docs divergem</span></h3>
+      <p>FAQ da API: 20 dias para pagar, 20 para gerar, 20 para postar (7 nos Correios). Central de Ajuda e guia de compra: 7 + 7 + 7 dias corridos. Projetar para 7 dias: inserir no carrinho só após <code>paid</code>, alertar o admin em D+5 de etiqueta gerada e não postada, tratar <code>expired_at</code>/<code>order.cancelled</code> como terminal (crédito na carteira precisa de conferência manual — a doc não afirma estorno automático na expiração).</p>
+
+      <h3>Rastreio e webhooks</h3>
+      <div class="two">
+        <div>
+          <h4>Webhook (painel do app → “Novo Webhook”)</h4>
+          <ul>
+            <li>Eventos: <code>order.created / pending / released / generated / received / posted / delivered / cancelled / undelivered / paused / suspended</code>. Só transições da etiqueta — não há eventos de movimentação da transportadora.</li>
+            <li>Header <code>X-ME-Signature</code> = base64(HMAC-SHA256(corpo bruto, Secret do app)). Ler <code>request.text()</code> antes de qualquer parse; aceitar hex como fallback.</li>
+            <li>Timeout 6 s, 5 tentativas a cada 15 min, depois descarta. Responder 200 antes de processar.</li>
+            <li>Payload traz <code>tracking</code>, <code>self_tracking</code>, <code>tags</code>, timestamps e <code>tracking_url</code> pronto — salvar esse campo (o exemplo da doc tem um typo com espaço).</li>
+            <li>Ao cadastrar, o ME faz uma requisição de teste; 403 (Bot Fight Mode, Access) gera <code>E-WBH-0002</code>. Rota pública, fora do middleware.</li>
+            <li>Sandbox avança status a cada 15 min até entregue — permite testar o handler ponta a ponta.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Polling de segurança — <code>POST /me/shipment/tracking</code></h4>
+          <ul>
+            <li>Aceita vários UUIDs por chamada; devolve status + <code>tracking</code> (transportadora, pode chegar até 1 dia útil após a postagem) + <code>melhorenvio_tracking</code>.</li>
+            <li>Cache de ~1 h segundo a equipe do ME (2021) — polling a cada 2 h em lote é suficiente e fica muito abaixo de 250 req/min.</li>
+            <li>Cobre: código que chega depois do <code>order.posted</code> (não há evento para isso), etiquetas geradas fora do app, webhooks que falharam 5×.</li>
+            <li>Código exibido = <code>coalesce(tracking, self_tracking, tracking_code manual)</code>; link <code>https://www.melhorrastreio.com.br/rastreio/{codigo}</code>. Melhor Rastreio não cobre J&amp;T.</li>
+            <li>Se <code>to.email</code> for preenchido, o Melhor Rastreio envia e-mails de movimentação ao cliente (padrão ligado; desligar em Gerenciar → Configurações se a loja já notificar).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="dashboard">
+      <span class="eyebrow">Casos de uso do admin</span>
+      <h2>Ações do dashboard: quem faz o quê em cada situação</h2>
+      <p>Regra geral: decidir sempre depois de <code>GET /v1/payments/{mp_payment_id}</code> (nunca pelo status local), e registrar os dois lados financeiros — Mercado Pago devolve ao cliente; Melhor Envio devolve à carteira da loja.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Situação</th><th>Mercado Pago</th><th>Melhor Envio</th><th>Pedido / estoque</th></tr></thead>
+        <tbody>
+          <tr><td><b>Criar pedido manual</b></td><td>Criar preferência com <code>payer</code> pré-preenchido; copiar <code>init_point</code>. Pix imediato: Orders API com QR.</td><td>Cotar com o snapshot escolhido pelo admin</td><td><code>pending</code>; reserva estoque; <code>origin = manual</code></td></tr>
+          <tr><td>Cancelar antes de qualquer pagamento</td><td>Expirar preferência (<code>PUT</code> expires)</td><td>—</td><td><code>cancelled</code>; liberar estoque</td></tr>
+          <tr><td>Cancelar com Pix/boleto pendente</td><td><code>PUT /v1/payments/{id}</code> cancelled + expirar preferência</td><td>—</td><td><code>cancelled</code>; liberar estoque</td></tr>
+          <tr><td>Cancelar pedido pago, etiqueta não gerada</td><td>Reembolso <b>total</b> (inclui frete: nada foi gasto)</td><td>Se estiver no carrinho: <code>DELETE /me/cart/{id}</code> ou cancel</td><td><code>cancelled</code> quando o refund ficar <code>approved</code>; liberar estoque</td></tr>
+          <tr><td>Cancelar pedido pago, etiqueta gerada e não postada</td><td>Reembolso total</td><td><code>cancellable</code> → <code>cancel</code>; crédito na carteira em ~12 h</td><td><code>cancelled</code>; <code>refund_to_wallet_expected_at</code></td></tr>
+          <tr><td>Devolução após postagem/entrega (CDC 7 dias)</td><td>Total ou “somente produtos” (<code>total − shipping_cost</code>) ou valor por item</td><td>Reversa <code>POST /me/cart/reverse</code> (Correios)</td><td><code>payment_status = refunded</code>; estoque volta ao receber</td></tr>
+          <tr><td>Pedido só de e-book</td><td>Reembolso total</td><td>—</td><td>Revogar acesso ao arquivo</td></tr>
+          <tr><td>Pago, mas frete indisponível / saldo / limite</td><td>Só se não houver saída: total ou parcial do frete</td><td>Re-cotar e escolher serviço com <code>custom_price ≤ shipping_cost</code>; recarregar carteira; verificar conta</td><td>Mantém <code>paid</code> + <code>needs_attention</code> com motivo</td></tr>
+          <tr><td>Chargeback / disputa / alerta de fraude</td><td>Anexar rastreio + tela do pedido via <code>POST /v1/chargebacks/{id}/documentation</code>; alerta de fraude → cancelar sem enviar</td><td><b>Não gerar etiqueta</b>; se gerada, cancelar</td><td><code>needs_attention</code>; bloquear ações</td></tr>
+          <tr><td>Reembolso &gt; 180 dias ou sem saldo no MP</td><td>API rejeita — mostrar aviso; saldo do pedido pode não estar liberado (<code>money_release_date</code>)</td><td>—</td><td>Registrar tentativa em <code>order_refunds</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>Idempotência do reembolso: gerar <code>idempotency_key</code> (UUID) ao criar o registro em <code>order_refunds</code> <b>antes</b> de chamar o MP; repetir com a mesma chave em timeout/5xx; nunca abrir um segundo reembolso enquanto houver um <code>requested</code>/<code>in_process</code>. Reembolsos feitos pelo painel do MP (<code>by_admin</code>) ou por mediação (<code>bpp_*</code>) chegam pelo webhook e precisam ser conciliados.</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="schema">
+      <span class="eyebrow">Supabase</span>
+      <h2>Mudanças no banco</h2>
+      <p>Colunas que o cliente pode ver ficam em <code>orders</code> (RLS por linha já cobre); tudo que é interno ou sensível vai para tabelas separadas com RLS ligado e sem policies para <code>anon</code>/<code>authenticated</code> — acesso só por service role. Revogar colunas em <code>orders</code> quebraria o <code>select('*')</code> do dashboard.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tabela</th><th>Adicionar</th><th>Por quê</th></tr></thead>
+        <tbody>
+          <tr><td><code>products</code></td><td><code>weight_kg numeric(6,3)</code>, <code>height_cm</code>, <code>width_cm</code>, <code>length_cm int</code>; CHECK para físicos</td><td>Sem isso a cotação e o carrinho falham (422 “Peso do pacote 1 não informado”). Exigir no <code>product-form.tsx</code> com padrão de livro.</td></tr>
+          <tr><td><code>orders</code></td><td><code>subtotal</code>, <code>shipping_cost</code>, <code>shipping_service_id</code>, <code>shipping_service_name</code>, <code>shipping_company</code>, <code>shipping_delivery_range jsonb</code>, <code>shipping_quote jsonb</code>, <code>shipping_quoted_at</code>, <code>requires_shipping bool</code>, <code>mp_payment_id bigint</code> (índice), <code>mp_merchant_order_id</code>, <code>payment_status</code>, <code>payment_status_detail</code>, <code>payment_method</code>, <code>paid_at</code>, <code>refunded_amount</code>, <code>shipment_status</code>, <code>tracking_url</code>, <code>needs_attention bool</code>, <code>origin</code>, <code>expires_at</code>, <code>updated_at</code></td><td>Total = subtotal + frete (a receita do overview soma <code>total</code> e ficaria inflada pelo repasse ao ME). Status do MP e do ME sem tocar no enum que o site consome. Não usar enum estrito em <code>payment_method</code>/<code>payment_type_id</code> (<code>account_money</code> aparece na prática e não está na referência).</td></tr>
+          <tr><td><code>orders.shipping_address</code> (JSON)</td><td><code>recipient_name</code>, <code>recipient_document</code>, <code>recipient_phone</code>, <code>recipient_email</code></td><td>Correios exige CPF do destinatário; Jadlog exige telefone. Snapshot no pedido, coletado só em pedidos físicos (LGPD: execução de contrato, art. 7º V; mínimo necessário).</td></tr>
+          <tr><td><code>order_shipments</code> (nova)</td><td><code>order_id</code>, <code>me_order_id uuid</code>, <code>me_protocol</code>, <code>package_index</code>, <code>volume jsonb</code>, <code>price</code>, <code>status</code>, <code>tracking</code>, <code>self_tracking</code>, <code>label_url</code>, <code>generated_at</code>, <code>posted_at</code>, <code>delivered_at</code>, <code>canceled_at</code>, <code>expired_at</code></td><td>Correios pode exigir n etiquetas por pedido; o <code>id</code> do ME é a única chave de checkout/generate/print/cancel/tracking.</td></tr>
+          <tr><td><code>payment_events</code> (nova)</td><td><code>mp_notification_id</code>, <code>type</code>, <code>action</code>, <code>data_id</code>, <code>request_id</code>, <code>live_mode</code>, <code>payload jsonb</code>, <code>received_at</code>, <code>processed_at</code>, <code>result</code>; UNIQUE (<code>data_id</code>, <code>request_id</code>)</td><td>Idempotência dos reenvios (8 tentativas ao longo de dias) e reprocessamento por cron.</td></tr>
+          <tr><td><code>me_webhook_events</code> (nova)</td><td><code>me_order_id</code>, <code>event</code>, <code>payload jsonb</code>, <code>signature_valid</code>, <code>received_at</code>, <code>processed_at</code>; UNIQUE (<code>me_order_id</code>, <code>event</code>, timestamp do payload)</td><td>Assinatura do ME não tem nonce/timestamp — a defesa contra replay é idempotência + transições monotônicas.</td></tr>
+          <tr><td><code>order_refunds</code> (nova)</td><td><code>order_id</code>, <code>mp_payment_id</code>, <code>mp_refund_id</code>, <code>amount</code>, <code>kind</code> (full | products_only | custom), <code>status</code>, <code>idempotency_key uuid UNIQUE</code>, <code>reason</code>, <code>created_by</code>, <code>mp_response jsonb</code></td><td>Reembolso é assíncrono (Pix <code>in_process</code>) e a chave de idempotência precisa sobreviver a retries.</td></tr>
+          <tr><td><code>order_events</code> (nova)</td><td><code>order_id</code>, <code>type</code>, <code>from_status</code>, <code>to_status</code>, <code>actor</code>, <code>payload</code>, <code>created_at</code></td><td>Timeline real do pedido (hoje é inferida do status) e trilha para defesa de chargeback.</td></tr>
+          <tr><td><code>integration_tokens</code> (nova)</td><td><code>provider</code>, <code>access_token</code>, <code>refresh_token</code>, <code>expires_at</code>, <code>scopes</code>; ou Vault</td><td>Tokens OAuth do ME com renovação automática.</td></tr>
+          <tr><td><code>site_settings</code></td><td>CEP e dados do remetente (nome, CPF/CNPJ, IE, telefone, e-mail, endereço), <code>me_enabled_services</code>, regime fiscal</td><td>Remetente da etiqueta e origem da cotação não existem em lugar nenhum hoje.</td></tr>
+          <tr><td>Função <code>create_order(...)</code></td><td><code>security definer</code>, <code>set search_path = ''</code>: insere pedido + itens, recalcula preços de <code>products</code>, decrementa <code>stock</code> com <code>WHERE stock &gt;= qty</code></td><td>Atomicidade sem lock e fim do <code>total</code> definível pelo cliente. Policies de UPDATE em <code>orders</code> com <code>WITH CHECK</code>, sem permitir <code>status</code>/<code>total</code> ao papel <code>authenticated</code>.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="site">
+      <span class="eyebrow">Contrato com a loja</span>
+      <h2>Mudanças necessárias no site público</h2>
+      <p>O site precisa mudar <b>antes</b> de o fluxo de etiqueta ser ativado — pedidos pagos sem CPF/telefone ficam presos até o admin contatar o cliente.</p>
+      <ul>
+        <li><b>Checkout coleta CPF, telefone, e-mail e nome do destinatário</b> em pedidos com item físico; não pedir CPF em pedidos só de e-book nem para Pix.</li>
+        <li><b>Cotação de frete por CEP</b> chamada no servidor (token do ME nunca no browser), com cache de 15 min e debounce; exibir serviço, preço e “X a Y dias úteis”.</li>
+        <li><b>Criação do pedido via <code>rpc('create_order')</code></b> em vez de inserts diretos; o servidor re-cota, congela a cotação e recalcula o total.</li>
+        <li><b>Preferência do MP criada no servidor</b> e redirect para <code>init_point</code>; página de retorno lê a query (<code>status</code>, <code>payment_id</code>, <code>external_reference</code>) e mostra “aguardando confirmação” para Pix/boleto.</li>
+        <li><b>Liberação do e-book</b> só quando <code>orders.status = paid</code> (via RLS do próprio pedido), nunca pelo redirect.</li>
+        <li><b>Página do pedido</b>: status derivado, código de rastreio (transportadora ou ME), link do Melhor Rastreio, aviso “código pode levar até 1 dia útil” quando postado sem código. Substituir o link do linkcorreios.</li>
+        <li>Os 5 status atuais continuam válidos; o site pode opcionalmente ler <code>payment_status</code>/<code>shipment_status</code> para mensagens mais precisas.</li>
+      </ul>
+      <p>Alternativa arquitetural: concentrar cotação + criação de pedido + preferência em rotas do dashboard chamadas pela loja (um só lugar com a lógica de total e os clients MP/ME), evitando duplicar código entre dois repositórios sem pacote compartilhado.</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="infra">
+      <span class="eyebrow">Runtime</span>
+      <h2>Cloudflare Workers e Supabase: o que precisa mudar no dashboard</h2>
+      <div class="two">
+        <div>
+          <h4>Rotas e middleware</h4>
+          <ul>
+            <li>Criar <code>app/api/webhooks/mercadopago/route.ts</code>, <code>app/api/webhooks/melhor-envio/route.ts</code> e <code>app/api/jobs/*</code>; ler <code>await request.text()</code> uma vez, query via <code>request.nextUrl.searchParams</code>.</li>
+            <li>Excluir do matcher: <code>'/((?!api/webhooks|api/jobs|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'</code>.</li>
+            <li><b>Não migrar <code>middleware.ts</code> para <code>proxy.ts</code></b>: o OpenNext ainda não suporta (issue #962 aberta). Manter o wrapper edge; não importar SDK do MP nem APIs Node no middleware.</li>
+            <li>Server actions de pedidos não checam role — adicionar <code>requireAdmin()</code> em cada uma antes de expor rotas sem middleware.</li>
+          </ul>
+          <h4>Segredos</h4>
+          <ul>
+            <li><code>npx wrangler secret put</code>: <code>MP_ACCESS_TOKEN</code>, <code>MP_WEBHOOK_SECRET</code>, <code>ME_CLIENT_ID</code>, <code>ME_CLIENT_SECRET</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>JOB_SECRET</code>. <code>process.env</code> já funciona (flag <code>nodejs_compat_populate_process_env</code> ativa desde 2025-04-01).</li>
+            <li>Corrigir <code>.gitignore</code> (<code>.env</code>, <code>.env.*</code>, <code>.dev.vars*</code>) antes de criar qualquer credencial local.</li>
+            <li>Criar <code>lib/supabase/admin.ts</code> (service role, <code>persistSession: false</code>) usado só em webhooks/jobs.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Agendamento</h4>
+          <ul>
+            <li>O worker gerado pelo OpenNext só exporta <code>fetch</code>. Opção A: custom worker que reexporta o fetch e adiciona <code>scheduled</code> + <code>triggers.crons</code>. Opção B (mais simples): <b>pg_cron + pg_net no Supabase</b> chamando <code>/api/jobs/sync-tracking</code>, <code>/api/jobs/reconcile-payments</code>, <code>/api/jobs/refresh-me-token</code> com header <code>x-job-secret</code>.</li>
+            <li>Com a opção A, o pipeline atual (<code>wrangler versions upload</code>) não ativa crons — precisa de <code>wrangler triggers deploy</code>.</li>
+            <li>Jobs: rastreio a cada 2 h; expiração de preferências/estoque a cada 15–30 min; refresh do token ME quando faltar &lt; 7 dias; reprocessar eventos com <code>processed_at IS NULL</code>.</li>
+          </ul>
+          <h4>Plano e proteção</h4>
+          <ul>
+            <li>Workers Free tem 10 ms de CPU por requisição — validar HMAC + GET no MP + escritas no Supabase pode estourar. Plano Paid (30 s CPU, 10k subrequests) é praticamente obrigatório para webhooks e jobs. <code>waitUntil</code> é cancelado após 30 s.</li>
+            <li>Bot Fight Mode na zona do dashboard pode desafiar os POSTs do MP/ME e não é contornável por regra WAF — usar zona sem BFM ou Super Bot Fight Mode com exceção.</li>
+            <li>Subir <code>compatibility_date</code> para ≥ 2025-09-15 por robustez do polyfill de <code>process</code> usado pelo SDK do MP.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="pendencias">
+      <span class="eyebrow">Antes de codar</span>
+      <h2>O que precisa de resposta do cliente ou de teste em sandbox</h2>
+      <div class="two">
+        <div>
+          <h4>Respostas do Goleiro Vitor</h4>
+          <ul>
+            <li><b>Regime fiscal do remetente</b>: PF, MEI, PJ contribuinte de ICMS? Define NF-e × DC-e e se o dashboard precisa de emissor de nota. Consultar contador.</li>
+            <li><b>Titular da conta Melhor Envio</b> (pessoa física verificada) e CNPJ da loja como “Loja”; endereço de origem das cotações.</li>
+            <li><b>Conta Mercado Pago</b> com identidade validada, aplicação criada, credenciais de produção ativadas e compartilhadas com a Mube; prazo de recebimento e parcelamento escolhidos em Taxas e parcelas.</li>
+            <li><b>Saldo inicial na Melhor Carteira</b> e quem repõe; disciplina de gerar etiquetas só pelo dashboard (senão o rastreio não atualiza).</li>
+            <li><b>Política comercial</b>: quem paga o frete de devolução, reembolso “só produtos” vs total, prazo de reserva de estoque, boleto habilitado ou não.</li>
+            <li><b>Peso e dimensões</b> de cada livro físico e caixa padrão.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Confirmar em sandbox antes de fixar no código</h4>
+          <ul>
+            <li>Formato do erro de checkout do ME por saldo insuficiente (não documentado).</li>
+            <li>Encoding do <code>X-ME-Signature</code> (base64 no exemplo) e se webhooks disparam no sandbox.</li>
+            <li>Diferença prática entre <code>tracking</code> e <code>melhorenvio_tracking</code> numa etiqueta Correios real.</li>
+            <li>Validade real da etiqueta (<code>expired_at</code>) na conta de produção: 7 ou 20 dias.</li>
+            <li>Se o valor debitado da carteira é <code>custom_price</code> ou <code>price</code> (o adicional do painel é margem da loja?).</li>
+            <li>Unidade do <code>ts</code> do MP nos primeiros webhooks reais (13 dígitos = ms) e formato do body de <code>topic_merchant_order_wh</code>.</li>
+            <li>Se a tarifa do MP volta em reembolso parcial (<code>fee_details</code>).</li>
+            <li>Se <code>date_of_expiration</code> é aceito no POST da preferência ou só no PUT.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="roadmap">
+      <span class="eyebrow">Sequência sugerida</span>
+      <h2>Roadmap em fases</h2>
+      <div class="phases">
+        <div class="phase"><div class="num">0</div><div>
+          <h4>Fundação (sem integração ainda)</h4>
+          <ul>
+            <li>Migrations: dimensões em <code>products</code>, colunas em <code>orders</code>, tabelas de eventos/envios/reembolsos, <code>site_settings</code> de remetente, função <code>create_order</code>, policies com <code>WITH CHECK</code>.</li>
+            <li>Dashboard: <code>requireAdmin()</code> nas actions, <code>lib/supabase/admin.ts</code>, matcher do middleware, <code>.gitignore</code>, secrets, plano Paid.</li>
+            <li>Formulário de produto com peso/dimensões; página “Integrações” com status das contas.</li>
+          </ul>
+        </div></div>
+        <div class="phase"><div class="num">1</div><div>
+          <h4>Mercado Pago no dashboard</h4>
+          <ul>
+            <li><code>lib/mercadopago.ts</code> (SDK ≥ 3.3.0 ou fetch), webhook com assinatura + <code>payment_events</code> + mapeamento de status, botão “Verificar pagamento”.</li>
+            <li>Pedido manual + “Gerar cobrança” (<code>init_point</code>); cancelar/reembolsar com <code>order_refunds</code>.</li>
+            <li>Testes com contas de teste, cartões APRO/CONT, simulador de webhook; uma venda real de valor baixo para homologar Pix e a Qualidade da integração.</li>
+          </ul>
+        </div></div>
+        <div class="phase"><div class="num">2</div><div>
+          <h4>Melhor Envio no dashboard</h4>
+          <ul>
+            <li>App OAuth (sandbox e produção), <code>lib/melhorenvio.ts</code> com User-Agent e refresh, tabela de tokens, job de renovação.</li>
+            <li>“Gerar etiqueta” (saldo → cart → checkout → generate → print), “Cancelar etiqueta”, webhook <code>X-ME-Signature</code>, polling de rastreio, alerta D+5.</li>
+            <li>Sandbox ponta a ponta (status avança a cada 15 min).</li>
+          </ul>
+        </div></div>
+        <div class="phase"><div class="num">3</div><div>
+          <h4>Site público</h4>
+          <ul>
+            <li>Cotação por CEP, coleta de CPF/telefone, <code>rpc('create_order')</code>, preferência + redirect, página de retorno, página do pedido com rastreio.</li>
+            <li>Liberação de e-book por status <code>paid</code>. Desligar o link do linkcorreios.</li>
+          </ul>
+        </div></div>
+        <div class="phase"><div class="num">4</div><div>
+          <h4>Depois do go-live</h4>
+          <ul>
+            <li>Chargebacks e reclamações no dashboard (tópicos extras, anexar comprovante). Alerta de fraude.</li>
+            <li>Checkout Bricks / Orders API para Pix sem redirect, se a conversão pedir.</li>
+            <li>Emissão de NF-e integrada, se o regime fiscal exigir.</li>
+          </ul>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="fontes">
+      <span class="eyebrow">Referências</span>
+      <h2>Fontes oficiais usadas</h2>
+      <p>Todas as páginas do Mercado Pago aceitam o sufixo <code>.md</code> (markdown bruto); a doc do Melhor Envio tem índice em <code>docs.melhorenvio.com.br/llms.txt</code> e a Central de Ajuda é legível pela API Zendesk (<code>/api/v2/help_center/pt-br/articles/{id}.json</code>).</p>
+      <div class="two">
+        <div>
+          <h4>Mercado Pago</h4>
+          <ul class="src" style="columns:1">
+            <li><a href="https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-pro/preferences/create-preference/post">Criar preferência (referência)</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks">Webhooks e validação de assinatura</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/payment-notifications">Notificações do Checkout Pro (retentativas, simulador)</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-pro/get-payment/get">Consultar pagamento — status e status_detail</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-api-payments/create-refund/post">Criar reembolso</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-api-payments/create-cancellation/put">Cancelar pagamento</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/additional-settings/refunds-and-cancellations">Reembolsos e cancelamentos (Checkout Pro)</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/payment-management/cancellations-and-refunds/refund-pix">Reembolso de Pix (X-Render-In-Process-Refunds)</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/chargebacks/manage">Gerenciar contestações</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-api/create-order/post">Orders API — criar order</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/your-integrations/credentials">Credenciais</a> · <a href="https://www.mercadopago.com.br/developers/pt/docs/your-integrations/test/cards">Cartões de teste</a> · <a href="https://www.mercadopago.com.br/developers/pt/docs/your-integrations/test/accounts">Contas de teste</a></li>
+            <li><a href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/how-tos/integration-quality">Qualidade da integração</a></li>
+            <li><a href="https://www.mercadopago.com.br/ajuda/33399">Tarifas do checkout</a> · <a href="https://www.mercadopago.com.br/ajuda/294">Programa de Proteção ao Vendedor</a></li>
+            <li><a href="https://github.com/mercadopago/sdk-nodejs">SDK Node (CHANGELOG 3.2–3.6, WebhookSignatureValidator)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Melhor Envio</h4>
+          <ul class="src" style="columns:1">
+            <li><a href="https://docs.melhorenvio.com.br/reference/introducao-api-melhor-envio">Introdução (headers, URLs)</a> · <a href="https://docs.melhorenvio.com.br/reference/faq">FAQ (rate limit, prazos, tokens)</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/fluxo-de-autorização">OAuth — escopos e autorização</a> · <a href="https://docs.melhorenvio.com.br/reference/solicitacao-do-token">Solicitação do token</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/calculo-de-fretes-por-produtos">Cotação por produtos</a> · <a href="https://docs.melhorenvio.com.br/reference/listar-servicos">Listar serviços e restrições</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/inserir-fretes-no-carrinho">Inserir no carrinho (DC-e, NF-e, tags)</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/compra-de-fretes-1">Checkout (compra de fretes)</a> · <a href="https://docs.melhorenvio.com.br/reference/geracao-de-etiquetas">Geração</a> · <a href="https://docs.melhorenvio.com.br/reference/impressao-de-etiquetas">Impressão</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/cancelamento-de-etiquetas">Cancelamento</a> · <a href="https://docs.melhorenvio.com.br/reference/inserir-logistica-reversa-no-carrinho">Logística reversa</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/rastreio-de-envios">Rastreio de envios</a> · <a href="https://docs.melhorenvio.com.br/docs/webhooks">Webhooks (X-ME-Signature)</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/reference/saldo-do-usuario">Saldo do usuário</a> · <a href="https://docs.melhorenvio.com.br/reference/inserir-saldo-na-carteira-do-usuario">Inserir saldo</a></li>
+            <li><a href="https://docs.melhorenvio.com.br/docs/sandbox">Sandbox</a> · <a href="https://docs.melhorenvio.com.br/docs/criando-um-novo-aplicativo">Criar aplicativo</a></li>
+            <li><a href="https://centraldeajuda.melhorenvio.com.br/hc/pt-br/articles/31220442517652">Limite de envios simultâneos</a> · <a href="https://centraldeajuda.melhorenvio.com.br/hc/pt-br/articles/41306548209300">DC-e</a> · <a href="https://centraldeajuda.melhorenvio.com.br/hc/pt-br/articles/31220449136660">Regras dos Correios</a></li>
+            <li><a href="https://github.com/melhorenvio/wp-melhorenvio-v2">Plugin oficial WooCommerce (referência de comportamento)</a></li>
+          </ul>
+          <h4>Runtime</h4>
+          <ul class="src" style="columns:1">
+            <li><a href="https://developers.cloudflare.com/workers/platform/limits/">Limites do Workers</a> · <a href="https://developers.cloudflare.com/workers/configuration/secrets/">Secrets</a></li>
+            <li><a href="https://opennext.js.org/cloudflare/howtos/custom-worker">OpenNext — custom worker (scheduled)</a> · <a href="https://github.com/opennextjs/opennextjs-cloudflare/issues/962">Issue #962 (proxy.ts)</a></li>
+            <li><a href="https://supabase.com/docs/guides/cron/quickstart">Supabase Cron</a> · <a href="https://supabase.com/docs/guides/api/api-keys">Chaves de API / service role</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot">Fatos marcados como divergentes ou não verificáveis nas docs foram sinalizados no texto; onde duas páginas oficiais se contradizem, o relatório adota o valor mais conservador.</p>
+    </section>
+  </main>
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", sequence: { useMaxWidth: true } });
+</script>
+</body>
+</html>
