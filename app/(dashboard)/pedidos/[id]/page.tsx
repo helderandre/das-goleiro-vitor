@@ -24,6 +24,8 @@ import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
 import { OrderTrackingCode } from "@/components/order-tracking-code"
 import { OrderPaymentProof } from "@/components/order-payment-proof"
+import { OrderPaymentActions } from "@/components/order-payment-actions"
+import { OrderShippingActions } from "@/components/order-shipping-actions"
 
 interface ShippingAddress {
   street?: string
@@ -234,13 +236,18 @@ export default async function PedidoDetailPage({
           <Card>
             <CardHeader>
               <CardTitle>Pagamento</CardTitle>
+              <CardDescription>Mercado Pago</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {order.mp_preference_id && (
-                <p className="text-xs text-muted-foreground break-all">
-                  MP Preference: {order.mp_preference_id}
-                </p>
-              )}
+              <OrderPaymentActions
+                orderId={order.id}
+                paymentId={order.mp_payment_id}
+                paymentStatus={order.mp_payment_status}
+                paymentMethod={order.mp_payment_method}
+                paidAt={order.mp_paid_at}
+                preferenceId={order.mp_preference_id}
+              />
+              <Separator />
               <OrderPaymentProof
                 orderId={order.id}
                 currentUrl={order.payment_proof_url}
@@ -252,8 +259,20 @@ export default async function PedidoDetailPage({
             <Card>
               <CardHeader>
                 <CardTitle>Envio</CardTitle>
+                <CardDescription>Melhor Envio</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <OrderShippingActions
+                  orderId={order.id}
+                  shippingStatus={order.shipping_status}
+                  serviceId={order.me_service_id}
+                  serviceName={order.me_service_name}
+                  shippingPrice={order.shipping_price}
+                  cartId={order.me_cart_id}
+                  labelUrl={order.label_url}
+                  trackingCode={order.tracking_code}
+                />
+                <Separator />
                 <OrderTrackingCode
                   orderId={order.id}
                   currentCode={order.tracking_code}
