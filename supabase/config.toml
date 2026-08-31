@@ -1,0 +1,39 @@
+project_id = "cxdxgfwlqdzczwwhdhyz"
+
+# Webhooks: Mercado Pago e Melhor Envio não enviam JWT do Supabase.
+# A autenticidade vem da assinatura HMAC dentro da própria function.
+[functions.mp-webhook]
+verify_jwt = false
+
+[functions.melhor-envio-webhook]
+verify_jwt = false
+
+# Callback OAuth do Melhor Envio: chamado pelo navegador do admin, sem JWT.
+[functions.melhor-envio-auth]
+verify_jwt = false
+
+# Chamadas do site público / dashboard com o token do usuário.
+# A autorização é feita dentro da function (dono do pedido ou admin).
+[functions.mp-create-preference]
+verify_jwt = false
+
+[functions.mp-create-payment]
+verify_jwt = false
+
+[functions.mp-check-payment]
+verify_jwt = false
+
+[functions.melhor-envio-cotacao]
+verify_jwt = false
+
+# Ação privilegiada: gasta saldo da Melhor Carteira.
+# Exige profiles.role = 'admin' dentro da function (task 1.1).
+[functions.melhor-envio-etiquetas]
+verify_jwt = false
+
+# Auxiliares de teste/diagnóstico — proteger ou remover antes de produção (task 1.5).
+[functions.mp-test-card-payment]
+verify_jwt = false
+
+[functions.melhor-envio-debug]
+verify_jwt = false
