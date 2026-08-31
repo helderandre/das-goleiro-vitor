@@ -26,6 +26,7 @@ import { OrderTrackingCode } from "@/components/order-tracking-code"
 import { OrderPaymentProof } from "@/components/order-payment-proof"
 import { OrderPaymentActions } from "@/components/order-payment-actions"
 import { OrderShippingActions } from "@/components/order-shipping-actions"
+import { OrderRefundDialog } from "@/components/order-refund-dialog"
 
 interface ShippingAddress {
   street?: string
@@ -252,6 +253,18 @@ export default async function PedidoDetailPage({
                 orderId={order.id}
                 currentUrl={order.payment_proof_url}
               />
+              {order.status !== "cancelled" && (
+                <>
+                  <Separator />
+                  <OrderRefundDialog
+                    orderId={order.id}
+                    total={Number(order.total)}
+                    shippingPrice={Number(order.shipping_price ?? 0)}
+                    hasPayment={Boolean(order.mp_payment_id)}
+                    isShipped={["shipped", "delivered"].includes(order.status ?? "")}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
 

@@ -21,11 +21,13 @@ import {
   Package,
   Printer,
   Truck,
+  XCircle,
 } from "lucide-react"
 import {
   quoteShipping,
   setShippingService,
   runLabelAction,
+  cancelLabel,
 } from "@/app/(dashboard)/pedidos/actions"
 
 interface QuoteOption {
@@ -187,23 +189,44 @@ export function OrderShippingActions({
         ))}
 
         {cartId && (
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={isPending}
-            onClick={() =>
-              run("tracking", () => runLabelAction(orderId, "tracking"), () =>
-                toast.success("Rastreio atualizado"),
-              )
-            }
-          >
-            {running === "tracking" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Truck className="h-4 w-4" />
-            )}
-            Rastrear
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={isPending}
+              onClick={() =>
+                run("tracking", () => runLabelAction(orderId, "tracking"), () =>
+                  toast.success("Rastreio atualizado"),
+                )
+              }
+            >
+              {running === "tracking" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Truck className="h-4 w-4" />
+              )}
+              Rastrear
+            </Button>
+
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              disabled={isPending}
+              onClick={() =>
+                run("cancel-label", () => cancelLabel(orderId), (result) =>
+                  toast.success((result.message as string) ?? "Etiqueta cancelada"),
+                )
+              }
+            >
+              {running === "cancel-label" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              Cancelar etiqueta
+            </Button>
+          </>
         )}
       </div>
 

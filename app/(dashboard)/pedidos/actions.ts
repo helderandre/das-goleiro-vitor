@@ -401,3 +401,57 @@ export async function runLabelAction(orderId: string, action: LabelAction) {
   revalidateOrder(orderId)
   return { success: true, data: result.data }
 }
+
+/**
+ * Cancela o pedido e devolve o dinheiro ao cliente.
+ *
+ * A function decide a ação pelo estado real do pagamento: cancela se ainda não
+ * foi aprovado, reembolsa se já foi. `kind` escolhe o valor: tudo, tudo menos o
+ * frete, ou um valor específico.
+ */
+export async function refundOrder(
+  orderId: string,
+  options: { kind?: "full" | "products_only" | "custom"; amount?: number; reason?: string } = {},
+) {
+  const result = await callEdgeFunction<{
+    status: string
+    mensagem: string
+    amount?: number
+  }>("mp-refund", {
+    body: {
+      order_id: orderId,
+      kind: options.kind ?? "full",
+      amount: options.amount,
+      reason: options.reason,
+      environment: MP_ENVIRONMENT,
+    },
+  })
+
+  if (!result.ok) return { error: result.error ?? "Falha ao cancelar o pedido" }
+
+  revalidateOrder(orderId)
+  return { success: true, status: result.data?.status, message: result.data?.mensagem }
+}
+
+/** Cancela a etiqueta no Melhor Envio (o valor volta para a Melhor Carteira). */
+export async function cancelLabel(orderId: string, reason?: string) {
+  const result = await callEdgeFunction<{ mensagem: string }>("melhor-envio-etiquetas", {
+    query: { action: "cancel" },
+    body: { order_id: orderId, motivo: reason },
+  })
+
+  if (!result.ok) return { error: result.error ?? "Falha ao cancelar a etiqueta" }
+
+  revalidateOrder(orderId)
+  return { success: true, message: result.data?.mensagem }
+}
+
+/** Saldo da Melhor Carteira — a etiqueta é paga com ele. */
+export async function getWalletBalance() {
+  const result = await callEdgeFunction<{
+    saldo: { balance: number; reserved: number; debts: number }
+  }>("melhor-envio-etiquetas", { method: "GET", query: { action: "balance" } })
+
+  if (!result.ok) return { error: result.error ?? "Falha ao consultar o saldo" }
+  return { success: true, balance: result.data?.saldo }
+}
