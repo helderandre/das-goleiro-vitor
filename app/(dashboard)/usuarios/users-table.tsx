@@ -145,7 +145,7 @@ export function UsersTable({
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>
+                <TableCell className="whitespace-normal break-words">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
@@ -160,7 +160,7 @@ export function UsersTable({
                       <p className="text-sm font-medium">
                         {user.full_name ?? "—"}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="hidden text-xs text-muted-foreground sm:block">
                         {user.email}
                       </p>
                     </div>

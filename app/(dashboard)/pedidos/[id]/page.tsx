@@ -170,7 +170,7 @@ export default async function PedidoDetailPage({
                 <TableBody>
                   {items?.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-normal break-words">
                         {item.product_title}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">

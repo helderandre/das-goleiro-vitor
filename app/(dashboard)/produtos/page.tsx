@@ -133,7 +133,7 @@ export default async function ProdutosPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium whitespace-normal break-words">
                       {product.title}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">

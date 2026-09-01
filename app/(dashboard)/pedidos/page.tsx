@@ -92,7 +92,7 @@ export default async function PedidosPage({
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden md:table-cell">Data</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,14 +104,19 @@ export default async function PedidosPage({
                   return (
                     <TableRow key={order.id}>
                       <TableCell className="font-mono text-sm">
-                        {order.short_id ?? `#${order.id.slice(0, 8)}`}
+                        <Link
+                          href={`/pedidos/${order.id}`}
+                          className="underline-offset-2 hover:underline"
+                        >
+                          {order.short_id ?? `#${order.id.slice(0, 8)}`}
+                        </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-normal break-words">
                         <div>
                           <p className="text-sm font-medium">
                             {profile?.full_name ?? "—"}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="hidden text-xs text-muted-foreground sm:block">
                             {profile?.email ?? ""}
                           </p>
                         </div>
@@ -130,7 +135,7 @@ export default async function PedidosPage({
                           "pt-BR",
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right hidden sm:table-cell">
                         <Button variant="ghost" size="icon" asChild>
                           <Link href={`/pedidos/${order.id}`}>
                             <Eye className="h-4 w-4" />

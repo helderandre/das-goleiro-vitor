@@ -129,7 +129,7 @@ function EventTable({ events }: { events: EventRow[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-16">Capa</TableHead>
+          <TableHead className="w-16 hidden sm:table-cell">Capa</TableHead>
           <TableHead>Título</TableHead>
           <TableHead className="hidden lg:table-cell">Tipo</TableHead>
           <TableHead className="hidden md:table-cell">Local</TableHead>
@@ -144,7 +144,7 @@ function EventTable({ events }: { events: EventRow[] }) {
 
           return (
             <TableRow key={event.id}>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 {event.cover_url ? (
                   <img
                     src={event.cover_url}
@@ -157,7 +157,7 @@ function EventTable({ events }: { events: EventRow[] }) {
                   </div>
                 )}
               </TableCell>
-              <TableCell className="font-medium">{event.title}</TableCell>
+              <TableCell className="font-medium whitespace-normal break-words">{event.title}</TableCell>
               <TableCell className="hidden lg:table-cell">
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${typeColors[event.event_type ?? "palestra"] ?? ""}`}
@@ -186,11 +186,11 @@ function EventTable({ events }: { events: EventRow[] }) {
               <TableCell className="text-sm text-muted-foreground">
                 {new Date(event.start_date).toLocaleDateString("pt-BR", {
                   day: "2-digit",
-                  month: "short",
-                  year: "numeric",
+                  month: "2-digit",
+                  year: "2-digit",
                 })}
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <Badge variant={sc.variant}>{sc.label}</Badge>
               </TableCell>
               <TableCell>

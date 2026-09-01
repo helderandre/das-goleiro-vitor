@@ -462,10 +462,10 @@ export default async function FinanceiroPage() {
                         {tx.shortId}
                       </Link>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal break-words">
                       <div>
                         <p className="text-sm font-medium">{tx.customerName}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="hidden text-xs text-muted-foreground sm:block">
                           {tx.customerEmail}
                         </p>
                       </div>

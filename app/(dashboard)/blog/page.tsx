@@ -67,7 +67,7 @@ export default async function BlogPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16">Capa</TableHead>
+                  <TableHead className="w-16 hidden sm:table-cell">Capa</TableHead>
                   <TableHead>Título</TableHead>
                   <TableHead className="hidden lg:table-cell">Categorias</TableHead>
                   <TableHead>Status</TableHead>
@@ -78,7 +78,7 @@ export default async function BlogPage() {
               <TableBody>
                 {posts.map((post) => (
                   <TableRow key={post.id}>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {post.cover_url ? (
                         <img
                           src={post.cover_url}
@@ -91,7 +91,7 @@ export default async function BlogPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal break-words">
                       <p className="font-medium">{post.title}</p>
                       {post.excerpt && (
                         <p className="text-xs text-muted-foreground line-clamp-1">

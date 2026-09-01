@@ -265,7 +265,7 @@ export function LeadsTable({
                       onCheckedChange={() => toggleOne(lead.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium whitespace-normal break-words">
                     {lead.name}
                     {lead.status === "new" && (
                       <span className="ml-2 inline-block h-2 w-2 rounded-full bg-primary" />
