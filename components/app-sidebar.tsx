@@ -9,6 +9,8 @@ import {
   MessageSquare,
   Users,
   Globe,
+  DollarSign,
+  MapPin,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -43,6 +45,11 @@ const navItems = [
     icon: ShoppingCart,
   },
   {
+    title: "Financeiro",
+    href: "/financeiro",
+    icon: DollarSign,
+  },
+  {
     title: "Blog",
     href: "/blog",
     icon: FileText,
@@ -61,6 +68,11 @@ const navItems = [
     title: "Usuários",
     href: "/usuarios",
     icon: Users,
+  },
+  {
+    title: "Remetente",
+    href: "/remetente",
+    icon: MapPin,
   },
   {
     title: "Site",

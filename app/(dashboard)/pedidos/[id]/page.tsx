@@ -19,7 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, MapPin, User, Package } from "lucide-react"
+import { ArrowLeft, MapPin, MessageSquare, User, Package } from "lucide-react"
+import { getPaymentDisplay } from "@/lib/payment-methods"
 import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
 import { OrderTrackingCode } from "@/components/order-tracking-code"
@@ -27,6 +28,7 @@ import { OrderPaymentProof } from "@/components/order-payment-proof"
 import { OrderPaymentActions } from "@/components/order-payment-actions"
 import { OrderShippingActions } from "@/components/order-shipping-actions"
 import { OrderRefundDialog } from "@/components/order-refund-dialog"
+import { OrderMessages } from "@/components/order-messages"
 
 interface ShippingAddress {
   street?: string
@@ -55,7 +57,7 @@ export default async function PedidoDetailPage({
 
   if (!order) notFound()
 
-  const [{ data: items }, { data: profile }] = await Promise.all([
+  const [{ data: items }, { data: profile }, { data: messages }] = await Promise.all([
     supabase
       .from("order_items")
       .select("*")
@@ -68,10 +70,19 @@ export default async function PedidoDetailPage({
           .eq("id", order.user_id)
           .single()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("order_messages")
+      .select("id, message, sender_role, read_at, created_at")
+      .eq("order_id", id)
+      .order("created_at", { ascending: true }),
   ])
 
   const address = order.shipping_address as ShippingAddress | null
   const hasPhysicalItems = items?.some((item) => item.product_type !== "ebook") ?? false
+  const unreadCount =
+    messages?.filter((m) => m.sender_role === "customer" && !m.read_at).length ?? 0
+  const payment = getPaymentDisplay(order.mp_payment_method, order.mp_payment_type)
+  const PaymentIcon = payment.icon
 
   return (
     <div className="space-y-6">
@@ -180,6 +191,28 @@ export default async function PedidoDetailPage({
               <OrderTimeline currentStatus={order.status ?? "pending"} />
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Mensagens
+                {unreadCount > 0 && (
+                  <Badge variant="destructive">{unreadCount} nova(s)</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Conversa com o cliente sobre este pedido
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OrderMessages
+                orderId={order.id}
+                messages={messages ?? []}
+                unreadCount={unreadCount}
+              />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar: Client + Address */}
@@ -236,8 +269,15 @@ export default async function PedidoDetailPage({
 
           <Card>
             <CardHeader>
-              <CardTitle>Pagamento</CardTitle>
-              <CardDescription>Mercado Pago</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <PaymentIcon className="h-5 w-5" />
+                Pagamento
+              </CardTitle>
+              <CardDescription>
+                {payment.hasData
+                  ? `Mercado Pago · ${payment.displayLabel}`
+                  : "Mercado Pago"}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <OrderPaymentActions
@@ -245,6 +285,7 @@ export default async function PedidoDetailPage({
                 paymentId={order.mp_payment_id}
                 paymentStatus={order.mp_payment_status}
                 paymentMethod={order.mp_payment_method}
+                paymentType={order.mp_payment_type}
                 paidAt={order.mp_paid_at}
                 preferenceId={order.mp_preference_id}
               />

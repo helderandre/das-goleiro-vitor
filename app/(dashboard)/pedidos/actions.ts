@@ -455,3 +455,38 @@ export async function getWalletBalance() {
   if (!result.ok) return { error: result.error ?? "Falha ao consultar o saldo" }
   return { success: true, balance: result.data?.saldo }
 }
+
+export async function sendOrderMessage(orderId: string, message: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return { error: "Não autenticado" }
+
+  const { error } = await supabase.from("order_messages").insert({
+    order_id: orderId,
+    sender_id: user.id,
+    sender_role: "admin",
+    message,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/pedidos/${orderId}`)
+  return { success: true }
+}
+
+export async function markMessagesAsRead(orderId: string) {
+  const supabase = await createClient()
+
+  await supabase
+    .from("order_messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("order_id", orderId)
+    .eq("sender_role", "customer")
+    .is("read_at", null)
+
+  revalidatePath(`/pedidos/${orderId}`)
+}

@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .select(`
-        id, short_id, total, shipping_price, user_id,
+        id, short_id, total, shipping_price, user_id, status,
         order_items (
           id, product_title, quantity, unit_price, product_type
         )
@@ -106,6 +106,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (order.status === "paid") {
+      return new Response(JSON.stringify({ error: "Pedido j\u00e1 est\u00e1 pago" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Buscar perfil
     const { data: profile } = await supabaseAdmin
       .from("profiles")
@@ -119,7 +126,8 @@ Deno.serve(async (req: Request) => {
     const docNumber = payer_doc_number || profile?.document?.replace(/\D/g, "") || "";
 
     const totalAmount = Number(order.total);
-    const external_reference = order.short_id || order.id;
+    // external_reference aceita apenas [A-Za-z0-9_-]; o short_id tem '#'.
+    const external_reference = String(order.id);
 
     // Montar items para additional_info
     const items = (order.order_items || []).map((item: any) => ({
@@ -197,20 +205,37 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Mapear status
-    const statusMap: Record<string, string> = {
-      approved: "paid",
-      authorized: "paid",
-      pending: "pending",
-      in_process: "pending",
-      in_mediation: "pending",
-      rejected: "cancelled",
-      cancelled: "cancelled",
-      refunded: "cancelled",
-      charged_back: "cancelled",
-    };
+    // Estado do pedido derivado do pagamento — mesma regra do mp-webhook.
+    // `null` significa "não mexe no status": recusado NÃO cancela o pedido,
+    // o cliente pode tentar de novo no mesmo pedido.
+    function mapOrderStatus(paymentStatus: string): string | null {
+      switch (paymentStatus) {
+        case "approved":
+          return "paid";
+        case "cancelled":
+          return "cancelled";
+        default:
+          return null;
+      }
+    }
 
-    const orderStatus = statusMap[mpData.status] || "pending";
+    /** Situações que exigem decisão humana. */
+    function attentionReason(paymentStatus: string): string | null {
+      switch (paymentStatus) {
+        case "refunded":
+          return "Pagamento reembolsado";
+        case "charged_back":
+          return "Contestação (chargeback) aberta — não enviar";
+        case "in_mediation":
+          return "Pagamento em disputa";
+        case "rejected":
+          return "Pagamento recusado — cliente pode tentar novamente";
+        default:
+          return null;
+      }
+    }
+
+    const orderStatus = mapOrderStatus(mpData.status);
 
     // Atualizar order
     const updateData: any = {
@@ -222,11 +247,27 @@ Deno.serve(async (req: Request) => {
       mp_payer_email: mpData.payer?.email,
       mp_net_amount: mpData.transaction_details?.net_received_amount,
       mp_fee_amount: mpData.fee_details?.reduce((sum: number, f: any) => sum + (f.amount || 0), 0) || 0,
-      status: orderStatus,
     };
 
-    if (mpData.status === "approved") {
-      updateData.mp_paid_at = mpData.date_approved || new Date().toISOString();
+    const reason = attentionReason(mpData.status);
+    if (reason) {
+      updateData.needs_attention = true;
+      updateData.attention_reason = reason;
+    }
+
+    // Só marca como pago se o valor cobrir o pedido.
+    if (orderStatus === "paid") {
+      const paid = Number(mpData.transaction_amount ?? 0);
+      const expected = Number(order.total ?? 0);
+      if (paid + 0.01 < expected) {
+        updateData.needs_attention = true;
+        updateData.attention_reason = `Pago R$ ${paid.toFixed(2)}, pedido R$ ${expected.toFixed(2)}`;
+      } else {
+        updateData.status = "paid";
+        updateData.mp_paid_at = mpData.date_approved || new Date().toISOString();
+      }
+    } else if (orderStatus === "cancelled" && order.status === "pending") {
+      updateData.status = "cancelled";
     }
 
     await supabaseAdmin
@@ -234,12 +275,27 @@ Deno.serve(async (req: Request) => {
       .update(updateData)
       .eq("id", order.id);
 
+    await supabaseAdmin.from("order_events").insert({
+      order_id: order.id,
+      type: "payment_attempt",
+      to_status: (updateData.status as string) ?? null,
+      actor: "system",
+      actor_id: user.id,
+      payload: {
+        payment_id: String(mpData.id),
+        method: payment_method,
+        mp_status: mpData.status,
+        status_detail: mpData.status_detail,
+        environment,
+      },
+    });
+
     // Montar resposta baseada no m\u00e9todo
     const response: any = {
       payment_id: mpData.id,
       status: mpData.status,
       status_detail: mpData.status_detail,
-      order_status: orderStatus,
+      order_status: (updateData.status as string) ?? order.status,
       payment_method: payment_method,
     };
 
