@@ -50,6 +50,7 @@ interface OrderShippingActionsProps {
   cartId: string | null
   labelUrl: string | null
   trackingCode: string | null
+  trackingUrl: string | null
 }
 
 /** O que cada passo faz de fato, para o admin não precisar adivinhar. */
@@ -83,6 +84,7 @@ export function OrderShippingActions({
   cartId,
   labelUrl,
   trackingCode,
+  trackingUrl,
 }: OrderShippingActionsProps) {
   const [isPending, startTransition] = useTransition()
   const [running, setRunning] = useState<string | null>(null)
@@ -156,6 +158,24 @@ export function OrderShippingActions({
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">Envio no ME</span>
             <span className="font-mono text-xs">{cartId.slice(0, 8)}…</span>
+          </div>
+        )}
+        {trackingCode && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground">Rastreio</span>
+            {trackingUrl ? (
+              <a
+                href={trackingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 font-mono text-xs text-primary underline underline-offset-2"
+              >
+                {trackingCode}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <span className="font-mono text-xs">{trackingCode}</span>
+            )}
           </div>
         )}
       </div>
@@ -263,9 +283,17 @@ export function OrderShippingActions({
               variant="ghost"
               disabled={isPending}
               onClick={() =>
-                run("tracking", () => runLabelAction(orderId, "tracking"), () =>
-                  toast.success("Rastreio atualizado"),
-                )
+                run("tracking", () => runLabelAction(orderId, "tracking"), (result) => {
+                  const code = (result.data as { tracking_code?: string | null })
+                    ?.tracking_code
+                  if (code) {
+                    toast.success(`Rastreio: ${code}`)
+                  } else {
+                    toast.info(
+                      "Ainda sem código. A transportadora só emite depois que o pacote é postado.",
+                    )
+                  }
+                })
               }
             >
               {running === "tracking" ? (

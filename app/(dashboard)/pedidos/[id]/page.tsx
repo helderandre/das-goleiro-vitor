@@ -391,6 +391,7 @@ export default async function PedidoDetailPage({
                   cartId={order.me_cart_id}
                   labelUrl={order.label_url}
                   trackingCode={order.tracking_code}
+                  trackingUrl={order.tracking_url}
                 />
                 <Separator />
                 <OrderTrackingCode
