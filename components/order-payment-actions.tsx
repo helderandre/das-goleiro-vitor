@@ -93,6 +93,13 @@ export function OrderPaymentActions({
 
   const status = paymentStatus ? statusLabels[paymentStatus] : null
 
+  // Cobrar de novo só faz sentido enquanto não há dinheiro liquidado. Depois de
+  // aprovado (ou devolvido/contestado) um novo link ou Pix cobraria o cliente
+  // em duplicidade.
+  const isSettled = ["approved", "refunded", "charged_back"].includes(
+    paymentStatus ?? "",
+  )
+
   return (
     <div className="space-y-4">
       {paymentId ? (
@@ -130,33 +137,37 @@ export function OrderPaymentActions({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isPending}
-          onClick={() => run("link", () => createPaymentLink(orderId))}
-        >
-          {running === "link" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <CreditCard className="h-4 w-4" />
-          )}
-          Gerar link
-        </Button>
+        {!isSettled && (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isPending}
+              onClick={() => run("link", () => createPaymentLink(orderId))}
+            >
+              {running === "link" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="h-4 w-4" />
+              )}
+              Gerar link
+            </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isPending}
-          onClick={() => run("pix", () => createPixPayment(orderId))}
-        >
-          {running === "pix" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <QrCode className="h-4 w-4" />
-          )}
-          Gerar Pix
-        </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isPending}
+              onClick={() => run("pix", () => createPixPayment(orderId))}
+            >
+              {running === "pix" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <QrCode className="h-4 w-4" />
+              )}
+              Gerar Pix
+            </Button>
+          </>
+        )}
 
         {paymentId && (
           <Button

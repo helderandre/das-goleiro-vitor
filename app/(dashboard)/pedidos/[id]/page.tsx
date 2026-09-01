@@ -273,11 +273,7 @@ export default async function PedidoDetailPage({
                 <PaymentIcon className="h-5 w-5" />
                 Pagamento
               </CardTitle>
-              <CardDescription>
-                {payment.hasData
-                  ? `Mercado Pago · ${payment.displayLabel}`
-                  : "Mercado Pago"}
-              </CardDescription>
+              <CardDescription>Mercado Pago</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <OrderPaymentActions

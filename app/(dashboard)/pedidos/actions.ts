@@ -118,8 +118,34 @@ function revalidateOrder(orderId: string) {
   revalidatePath(`/pedidos/${orderId}`)
 }
 
+/**
+ * Impede gerar uma nova cobrança quando já existe dinheiro liquidado no pedido.
+ * O botão some na UI, mas a server action é um endpoint público — sem isto o
+ * cliente poderia ser cobrado em duplicidade.
+ */
+async function assertNotSettled(orderId: string) {
+  const supabase = await createClient()
+  const { data: order } = await supabase
+    .from("orders")
+    .select("mp_payment_status")
+    .eq("id", orderId)
+    .single()
+
+  const settled = ["approved", "refunded", "charged_back"]
+  if (order && settled.includes(order.mp_payment_status ?? "")) {
+    return {
+      error:
+        "Este pedido já tem um pagamento liquidado. Gerar uma nova cobrança duplicaria o valor.",
+    }
+  }
+  return null
+}
+
 /** Cria a preferência do Checkout Pro e devolve o link de pagamento. */
 export async function createPaymentLink(orderId: string) {
+  const blocked = await assertNotSettled(orderId)
+  if (blocked) return blocked
+
   const result = await callEdgeFunction<{
     preference_id: string
     init_point: string
@@ -141,6 +167,9 @@ export async function createPaymentLink(orderId: string) {
 
 /** Gera um pagamento Pix (QR Code + copia-e-cola) para o pedido. */
 export async function createPixPayment(orderId: string) {
+  const blocked = await assertNotSettled(orderId)
+  if (blocked) return blocked
+
   const result = await callEdgeFunction<{
     payment_id: number
     status: string
