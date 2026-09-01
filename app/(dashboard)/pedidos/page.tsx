@@ -104,7 +104,7 @@ export default async function PedidosPage({
                   return (
                     <TableRow key={order.id}>
                       <TableCell className="font-mono text-sm">
-                        #{order.short_id ?? order.id.slice(0, 8)}
+                        {order.short_id ?? `#${order.id.slice(0, 8)}`}
                       </TableCell>
                       <TableCell>
                         <div>

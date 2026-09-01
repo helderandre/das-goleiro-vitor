@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, MapPin, MessageSquare, User, Package } from "lucide-react"
+import { AlertTriangle, ArrowLeft, MapPin, MessageSquare, User, Package } from "lucide-react"
 import { getPaymentDisplay } from "@/lib/payment-methods"
 import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
@@ -39,6 +39,18 @@ interface ShippingAddress {
   state?: string
   zip_code?: string
   label?: string
+  /** Cotação escolhida no checkout da loja. Nem todo pedido tem. */
+  shipping?: {
+    price?: number
+    carrier?: string
+    service_id?: number
+    service_name?: string
+    delivery_days?: number
+  }
+}
+
+function formatBRL(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
 export default async function PedidoDetailPage({
@@ -84,6 +96,25 @@ export default async function PedidoDetailPage({
   const payment = getPaymentDisplay(order.mp_payment_method, order.mp_payment_type)
   const PaymentIcon = payment.icon
 
+  const shippingPrice = Number(order.shipping_price ?? 0)
+  const total = Number(order.total)
+  // subtotal só passou a ser preenchido pela create_order; pedidos antigos caem
+  // no cálculo a partir dos itens.
+  const subtotal =
+    order.subtotal != null
+      ? Number(order.subtotal)
+      : (items ?? []).reduce(
+          (sum, item) => sum + Number(item.unit_price) * item.quantity,
+          0,
+        )
+  const quote = address?.shipping
+  const serviceName = order.me_service_name ?? quote?.service_name ?? null
+  const carrier = quote?.carrier ?? null
+  const deliveryDays = quote?.delivery_days ?? null
+  // Pedidos gravados direto pela loja (sem passar pela create_order) podem ter
+  // total sem o frete somado — o admin precisa ver isso.
+  const totalMismatch = Math.abs(subtotal + shippingPrice - total) > 0.01
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -94,7 +125,7 @@ export default async function PedidoDetailPage({
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">
-            Pedido #{order.short_id ?? order.id.slice(0, 8)}
+            Pedido {order.short_id ?? `#${order.id.slice(0, 8)}`}
           </h1>
           <p className="text-muted-foreground">
             {new Date(order.created_at!).toLocaleDateString("pt-BR", {
@@ -170,14 +201,53 @@ export default async function PedidoDetailPage({
               </Table>
               <Separator className="my-4" />
               <div className="flex justify-end">
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-2xl font-bold">
-                    {Number(order.total).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </p>
+                <div className="w-full max-w-sm space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatBRL(subtotal)}</span>
+                  </div>
+
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      Frete
+                      {serviceName && (
+                        <span className="text-foreground">
+                          {" · "}
+                          {serviceName}
+                        </span>
+                      )}
+                    </span>
+                    <span>
+                      {shippingPrice > 0 ? formatBRL(shippingPrice) : "—"}
+                    </span>
+                  </div>
+
+                  {(carrier || deliveryDays != null) && (
+                    <p className="text-xs text-muted-foreground">
+                      {carrier}
+                      {carrier && deliveryDays != null && " · "}
+                      {deliveryDays != null &&
+                        `prazo estimado de ${deliveryDays} dia(s) úteis`}
+                    </p>
+                  )}
+
+                  <Separator />
+
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-muted-foreground">Total</span>
+                    <span className="text-2xl font-bold">
+                      {formatBRL(total)}
+                    </span>
+                  </div>
+
+                  {totalMismatch && (
+                    <p className="flex items-start gap-1.5 text-xs text-destructive">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      Total não bate com subtotal + frete (
+                      {formatBRL(subtotal + shippingPrice)}). O pedido pode ter
+                      sido criado sem somar o frete.
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>

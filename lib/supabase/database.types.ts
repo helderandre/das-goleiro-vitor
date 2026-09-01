@@ -369,6 +369,59 @@ export type Database = {
         }
         Relationships: []
       }
+      me_webhook_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          event: string
+          id: string
+          me_order_id: string | null
+          order_id: string | null
+          payload: Json
+          processed: boolean
+          processed_at: string | null
+          signature_valid: boolean | null
+          status: string | null
+          tracking: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event: string
+          id?: string
+          me_order_id?: string | null
+          order_id?: string | null
+          payload?: Json
+          processed?: boolean
+          processed_at?: string | null
+          signature_valid?: boolean | null
+          status?: string | null
+          tracking?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event?: string
+          id?: string
+          me_order_id?: string | null
+          order_id?: string | null
+          payload?: Json
+          processed?: boolean
+          processed_at?: string | null
+          signature_valid?: boolean | null
+          status?: string | null
+          tracking?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "me_webhook_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       melhor_envio_tokens: {
         Row: {
           access_token: string
@@ -446,6 +499,7 @@ export type Database = {
           payload: Json
           payment_id: string | null
           processed: boolean
+          processed_at: string | null
         }
         Insert: {
           created_at?: string
@@ -457,6 +511,7 @@ export type Database = {
           payload?: Json
           payment_id?: string | null
           processed?: boolean
+          processed_at?: string | null
         }
         Update: {
           created_at?: string
@@ -468,10 +523,55 @@ export type Database = {
           payload?: Json
           payment_id?: string | null
           processed?: boolean
+          processed_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "mp_webhook_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_events: {
+        Row: {
+          actor: string
+          actor_id: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          order_id: string
+          payload: Json
+          to_status: string | null
+          type: string
+        }
+        Insert: {
+          actor?: string
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          order_id: string
+          payload?: Json
+          to_status?: string | null
+          type: string
+        }
+        Update: {
+          actor?: string
+          actor_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          order_id?: string
+          payload?: Json
+          to_status?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
@@ -579,10 +679,68 @@ export type Database = {
           },
         ]
       }
+      order_refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          idempotency_key: string
+          kind: string
+          mp_payment_id: string | null
+          mp_refund_id: string | null
+          mp_response: Json | null
+          order_id: string
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key: string
+          kind?: string
+          mp_payment_id?: string | null
+          mp_refund_id?: string | null
+          mp_response?: Json | null
+          order_id: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          mp_payment_id?: string | null
+          mp_refund_id?: string | null
+          mp_response?: Json | null
+          order_id?: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
+          attention_reason: string | null
           created_at: string | null
           delivered_at: string | null
+          expires_at: string | null
           id: string
           label_url: string | null
           me_cart_id: string | null
@@ -599,6 +757,8 @@ export type Database = {
           mp_payment_status: string | null
           mp_payment_type: string | null
           mp_preference_id: string | null
+          needs_attention: boolean
+          origin: string
           payment_proof_url: string | null
           shipped_at: string | null
           shipping_address: Json | null
@@ -606,13 +766,18 @@ export type Database = {
           shipping_status: string | null
           short_id: string | null
           status: string | null
+          subtotal: number | null
           total: number
           tracking_code: string | null
+          tracking_url: string | null
+          updated_at: string
           user_id: string | null
         }
         Insert: {
+          attention_reason?: string | null
           created_at?: string | null
           delivered_at?: string | null
+          expires_at?: string | null
           id?: string
           label_url?: string | null
           me_cart_id?: string | null
@@ -629,6 +794,8 @@ export type Database = {
           mp_payment_status?: string | null
           mp_payment_type?: string | null
           mp_preference_id?: string | null
+          needs_attention?: boolean
+          origin?: string
           payment_proof_url?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
@@ -636,13 +803,18 @@ export type Database = {
           shipping_status?: string | null
           short_id?: string | null
           status?: string | null
+          subtotal?: number | null
           total: number
           tracking_code?: string | null
+          tracking_url?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
+          attention_reason?: string | null
           created_at?: string | null
           delivered_at?: string | null
+          expires_at?: string | null
           id?: string
           label_url?: string | null
           me_cart_id?: string | null
@@ -659,6 +831,8 @@ export type Database = {
           mp_payment_status?: string | null
           mp_payment_type?: string | null
           mp_preference_id?: string | null
+          needs_attention?: boolean
+          origin?: string
           payment_proof_url?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
@@ -666,8 +840,11 @@ export type Database = {
           shipping_status?: string | null
           short_id?: string | null
           status?: string | null
+          subtotal?: number | null
           total?: number
           tracking_code?: string | null
+          tracking_url?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
@@ -962,6 +1139,18 @@ export type Database = {
     }
     Functions: {
       check_overdue_and_unblock_alerts: { Args: never; Returns: undefined }
+      create_order: {
+        Args: {
+          p_expires_at?: string
+          p_items: Json
+          p_origin?: string
+          p_service_id?: number
+          p_service_name?: string
+          p_shipping_address?: Json
+          p_shipping_price?: number
+        }
+        Returns: Json
+      }
       generate_slug: { Args: { title: string }; Returns: string }
       get_melhor_envio_token: {
         Args: never
@@ -972,6 +1161,7 @@ export type Database = {
           refresh_token: string
         }[]
       }
+      release_order_stock: { Args: { p_order_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

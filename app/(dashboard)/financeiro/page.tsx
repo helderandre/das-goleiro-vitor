@@ -218,7 +218,7 @@ async function getFinancialData() {
       const profile = o.user_id ? profileMap.get(o.user_id) : null
       return {
         id: o.id,
-        shortId: o.short_id ?? o.id.slice(0, 8),
+        shortId: o.short_id ?? `#${o.id.slice(0, 8)}`,
         total: Number(o.total),
         status: o.status ?? "pending",
         createdAt: o.created_at!,
@@ -459,7 +459,7 @@ export default async function FinanceiroPage() {
                         href={`/pedidos/${tx.id}`}
                         className="font-mono text-sm text-primary underline underline-offset-2"
                       >
-                        #{tx.shortId}
+                        {tx.shortId}
                       </Link>
                     </TableCell>
                     <TableCell>
