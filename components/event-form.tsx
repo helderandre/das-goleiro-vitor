@@ -97,7 +97,7 @@ export function EventForm({ event }: EventFormProps) {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {isEditing ? "Editar Evento" : "Novo Evento"}
           </h1>
           <p className="text-muted-foreground">
@@ -136,7 +136,7 @@ export function EventForm({ event }: EventFormProps) {
                   rows={4}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="event_type">Tipo</Label>
                   <Select
@@ -208,7 +208,7 @@ export function EventForm({ event }: EventFormProps) {
                       placeholder="Ex: Igreja Central, Ginásio Municipal"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="city">Cidade</Label>
                       <Input
@@ -249,7 +249,7 @@ export function EventForm({ event }: EventFormProps) {
             <CardHeader>
               <CardTitle>Datas</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="start_date">Início</Label>
                 <Input

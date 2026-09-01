@@ -324,7 +324,7 @@ export default async function FinanceiroPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
         <p className="text-muted-foreground">
           Visão geral das finanças e transações
         </p>
@@ -445,8 +445,8 @@ export default async function FinanceiroPage() {
                 <TableRow>
                   <TableHead>Pedido</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Pagamento</TableHead>
+                  <TableHead className="hidden md:table-cell">Data</TableHead>
+                  <TableHead className="hidden lg:table-cell">Pagamento</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                 </TableRow>
@@ -470,14 +470,14 @@ export default async function FinanceiroPage() {
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                       {new Date(tx.createdAt).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                       })}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {(() => {
                         const pm = getPaymentDisplay(tx.mpPaymentMethod, tx.mpPaymentType)
                         const Icon = pm.icon

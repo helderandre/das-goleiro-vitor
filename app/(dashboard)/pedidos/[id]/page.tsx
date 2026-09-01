@@ -117,14 +117,14 @@ export default async function PedidoDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/pedidos">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Pedido {order.short_id ?? `#${order.id.slice(0, 8)}`}
           </h1>
           <p className="text-muted-foreground">
@@ -161,9 +161,9 @@ export default async function PedidoDetailPage({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Produto</TableHead>
-                    <TableHead>Tipo</TableHead>
+                    <TableHead className="hidden sm:table-cell">Tipo</TableHead>
                     <TableHead className="text-center">Qtd</TableHead>
-                    <TableHead className="text-right">Unit.</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">Unit.</TableHead>
                     <TableHead className="text-right">Subtotal</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -173,7 +173,7 @@ export default async function PedidoDetailPage({
                       <TableCell className="font-medium">
                         {item.product_title}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <Badge variant="secondary">
                           {item.product_type === "ebook" ? "E-book" : "Físico"}
                         </Badge>
@@ -181,7 +181,7 @@ export default async function PedidoDetailPage({
                       <TableCell className="text-center">
                         {item.quantity}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right hidden sm:table-cell">
                         {Number(item.unit_price).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",

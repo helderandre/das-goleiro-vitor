@@ -63,7 +63,7 @@ export default async function PedidosPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Pedidos</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Pedidos</h1>
         <p className="text-muted-foreground">
           Gerencie os pedidos do marketplace
         </p>
@@ -91,7 +91,7 @@ export default async function PedidosPage({
                   <TableHead>Cliente</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead className="hidden md:table-cell">Data</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -125,7 +125,7 @@ export default async function PedidosPage({
                       <TableCell>
                         <OrderStatusBadge status={order.status} />
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                         {new Date(order.created_at!).toLocaleDateString(
                           "pt-BR",
                         )}

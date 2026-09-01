@@ -55,9 +55,9 @@ export default async function AgendaPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Agenda</h1>
           <p className="text-muted-foreground">
             Gerencie os eventos e missões
           </p>
@@ -131,8 +131,8 @@ function EventTable({ events }: { events: EventRow[] }) {
         <TableRow>
           <TableHead className="w-16">Capa</TableHead>
           <TableHead>Título</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Local</TableHead>
+          <TableHead className="hidden lg:table-cell">Tipo</TableHead>
+          <TableHead className="hidden md:table-cell">Local</TableHead>
           <TableHead>Data</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Ações</TableHead>
@@ -158,14 +158,14 @@ function EventTable({ events }: { events: EventRow[] }) {
                 )}
               </TableCell>
               <TableCell className="font-medium">{event.title}</TableCell>
-              <TableCell>
+              <TableCell className="hidden lg:table-cell">
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${typeColors[event.event_type ?? "palestra"] ?? ""}`}
                 >
                   {typeLabels[event.event_type ?? "palestra"]}
                 </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">
                 <div className="flex items-center gap-1 text-sm">
                   {event.location_type === "online" ? (
                     <>

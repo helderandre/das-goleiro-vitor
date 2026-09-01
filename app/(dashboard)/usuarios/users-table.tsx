@@ -135,9 +135,9 @@ export function UsersTable({
           <TableHeader>
             <TableRow>
               <TableHead>Usuário</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="text-center">Pedidos</TableHead>
+              <TableHead className="hidden md:table-cell">Telefone</TableHead>
+              <TableHead className="hidden sm:table-cell">Role</TableHead>
+              <TableHead className="text-center hidden lg:table-cell">Pedidos</TableHead>
               <TableHead className="text-right">Total Gasto</TableHead>
               <TableHead className="text-right">Ver</TableHead>
             </TableRow>
@@ -166,17 +166,17 @@ export function UsersTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="text-sm hidden md:table-cell">
                   {user.phone ?? "—"}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {user.role === "admin" ? (
                     <Badge variant="default">Admin</Badge>
                   ) : (
                     <Badge variant="secondary">Usuário</Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center hidden lg:table-cell">
                   {user.orderCount}
                 </TableCell>
                 <TableCell className="text-right font-medium">

@@ -38,9 +38,9 @@ export default async function BlogPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Blog</h1>
           <p className="text-muted-foreground">
             Gerencie os posts do blog
           </p>
@@ -69,9 +69,9 @@ export default async function BlogPage() {
                 <TableRow>
                   <TableHead className="w-16">Capa</TableHead>
                   <TableHead>Título</TableHead>
-                  <TableHead>Categorias</TableHead>
+                  <TableHead className="hidden lg:table-cell">Categorias</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead className="hidden md:table-cell">Data</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -99,7 +99,7 @@ export default async function BlogPage() {
                         </p>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {post.categories?.map((cat) => (
                           <span
@@ -118,7 +118,7 @@ export default async function BlogPage() {
                         <Badge variant="secondary">Rascunho</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                       {post.published_at
                         ? new Date(post.published_at).toLocaleDateString("pt-BR")
                         : post.created_at

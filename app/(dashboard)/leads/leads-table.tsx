@@ -241,11 +241,11 @@ export function LeadsTable({
                 />
               </TableHead>
               <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Tipo</TableHead>
+              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden lg:table-cell">Telefone</TableHead>
+              <TableHead className="hidden lg:table-cell">Tipo</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Data</TableHead>
+              <TableHead className="hidden sm:table-cell">Data</TableHead>
               <TableHead className="text-right">Ver</TableHead>
             </TableRow>
           </TableHeader>
@@ -271,11 +271,11 @@ export function LeadsTable({
                       <span className="ml-2 inline-block h-2 w-2 rounded-full bg-primary" />
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">{lead.email}</TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-sm hidden md:table-cell">{lead.email}</TableCell>
+                  <TableCell className="text-sm hidden lg:table-cell">
                     {lead.phone ?? "—"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <Badge variant="outline">
                       {typeLabels[lead.type ?? "contact"]}
                     </Badge>
@@ -283,7 +283,7 @@ export function LeadsTable({
                   <TableCell>
                     <Badge variant={sc.variant}>{sc.label}</Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
                     {lead.created_at
                       ? new Date(lead.created_at).toLocaleDateString("pt-BR")
                       : "—"}

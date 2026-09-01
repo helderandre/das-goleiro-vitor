@@ -68,9 +68,9 @@ export default async function ProdutosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Produtos</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Produtos</h1>
           <p className="text-muted-foreground">
             Gerencie os produtos do marketplace
           </p>
@@ -106,14 +106,14 @@ export default async function ProdutosPage() {
                 <TableRow>
                   <TableHead className="w-16">Imagem</TableHead>
                   <TableHead>Título</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead className="hidden md:table-cell">Tipo</TableHead>
                   <TableHead className="text-right">Preço</TableHead>
-                  <TableHead className="text-center">Estoque</TableHead>
-                  <TableHead className="text-center">Desconto</TableHead>
-                  <TableHead className="text-center">Principal</TableHead>
-                  <TableHead className="text-center">Carrinho</TableHead>
-                  <TableHead className="text-center">Checkouts</TableHead>
-                  <TableHead className="text-center">Abandonos</TableHead>
+                  <TableHead className="text-center hidden sm:table-cell">Estoque</TableHead>
+                  <TableHead className="text-center hidden lg:table-cell">Desconto</TableHead>
+                  <TableHead className="text-center hidden lg:table-cell">Principal</TableHead>
+                  <TableHead className="text-center hidden xl:table-cell">Carrinho</TableHead>
+                  <TableHead className="text-center hidden xl:table-cell">Checkouts</TableHead>
+                  <TableHead className="text-center hidden xl:table-cell">Abandonos</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -136,7 +136,7 @@ export default async function ProdutosPage() {
                     <TableCell className="font-medium">
                       {product.title}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant="secondary">
                         {product.product_type === "ebook"
                           ? "E-book"
@@ -149,22 +149,22 @@ export default async function ProdutosPage() {
                         currency: "BRL",
                       })}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden sm:table-cell">
                       {product.stock ?? 0}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden lg:table-cell">
                       {product.discount_percent
                         ? `${product.discount_percent}%`
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden lg:table-cell">
                       {product.is_main ? (
                         <Badge variant="default">Sim</Badge>
                       ) : (
                         "-"
                       )}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden xl:table-cell">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
@@ -177,7 +177,7 @@ export default async function ProdutosPage() {
                         </Tooltip>
                       </TooltipProvider>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden xl:table-cell">
                       <span className="text-sm">
                         {analyticsMap.get(product.id)?.checkoutCompleted ?? 0}
                         <span className="text-muted-foreground">
@@ -185,7 +185,7 @@ export default async function ProdutosPage() {
                         </span>
                       </span>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden xl:table-cell">
                       {(analyticsMap.get(product.id)?.abandoned ?? 0) > 0 ? (
                         <Badge variant="destructive" className="text-xs">
                           <XCircle className="mr-1 h-3 w-3" />

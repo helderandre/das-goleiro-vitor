@@ -91,7 +91,7 @@ export function ProductForm({ product, existingImages = [], analytics }: Product
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {isEditing ? "Editar Produto" : "Novo Produto"}
           </h1>
           <p className="text-muted-foreground">

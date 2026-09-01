@@ -186,15 +186,15 @@ export function BlogPostEditor({ post, images }: BlogPostEditorProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/blog">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">Editar Post</h1>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Editar Post</h1>
             {post.status === "published" ? (
               <Badge variant="default">Publicado</Badge>
             ) : (
@@ -202,7 +202,7 @@ export function BlogPostEditor({ post, images }: BlogPostEditorProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <BlogImageManager images={images} onImageDeleted={() => router.refresh()} />
           <DeletePostButton
             postId={post.id}

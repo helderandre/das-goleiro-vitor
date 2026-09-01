@@ -76,7 +76,7 @@ export default async function UsuariosPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Usuários</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Usuários</h1>
         <p className="text-muted-foreground">
           Usuários cadastrados na plataforma
         </p>
