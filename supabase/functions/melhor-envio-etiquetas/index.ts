@@ -538,28 +538,43 @@ Deno.serve(async (req: Request) => {
         .single();
       if (!order?.me_cart_id) return jsonResponse({ error: "Sem me_cart_id" }, 400);
 
-      const meRes = await meRequest(token, "/api/v2/me/shipment/tracking", "POST", {
-        orders: [order.me_cart_id],
-      });
-      if (!meRes.ok) {
-        return jsonResponse({ error: "Erro ao consultar rastreio", detalhes: meRes.data }, meRes.status);
+      // /shipment/tracking só devolve o código depois que o envio é postado;
+      // /me/orders/{id} já traz o código assim que a etiqueta é gerada. Consulta
+      // o segundo primeiro e usa o outro apenas como reserva.
+      const orderRes = await meRequest(token, `/api/v2/me/orders/${order.me_cart_id}`, "GET");
+
+      let info: Record<string, unknown> | null = orderRes.ok
+        ? (orderRes.data as Record<string, unknown>)
+        : null;
+
+      if (!info?.tracking && !info?.self_tracking) {
+        const meRes = await meRequest(token, "/api/v2/me/shipment/tracking", "POST", {
+          orders: [order.me_cart_id],
+        });
+        if (!info && !meRes.ok) {
+          return jsonResponse({ error: "Erro ao consultar rastreio", detalhes: meRes.data }, meRes.status);
+        }
+        if (meRes.ok) {
+          const fallback = meRes.data?.[order.me_cart_id] as Record<string, unknown> | undefined;
+          if (fallback) info = { ...(info ?? {}), ...fallback };
+        }
       }
 
-      const info = meRes.data?.[order.me_cart_id];
       const update: Record<string, unknown> = {};
 
-      // Código da transportadora pode demorar até 1 dia útil; o do ME serve antes.
-      const code = info?.tracking || info?.melhorenvio_tracking || null;
+      // `tracking` é o código da transportadora; `self_tracking` é o do próprio
+      // Melhor Envio, que serve enquanto o primeiro não sai.
+      const code = info?.tracking || info?.melhorenvio_tracking || info?.self_tracking || null;
       if (code && code !== order.tracking_code) update.tracking_code = code;
 
       const meStatus = String(info?.status ?? "");
       if (meStatus === "delivered") {
         update.shipping_status = "delivered";
-        update.delivered_at = info?.delivered_at ?? new Date().toISOString();
+        update.delivered_at = (info?.delivered_at as string) ?? new Date().toISOString();
         if (order.status !== "delivered") update.status = "delivered";
       } else if (meStatus === "posted" || meStatus === "in_transit") {
         update.shipping_status = "posted";
-        if (!order.shipped_at) update.shipped_at = info?.posted_at ?? new Date().toISOString();
+        if (!order.shipped_at) update.shipped_at = (info?.posted_at as string) ?? new Date().toISOString();
         if (order.status === "paid") update.status = "shipped";
       } else if (meStatus === "canceled" || meStatus === "cancelled") {
         update.shipping_status = "cancelled";
@@ -573,7 +588,7 @@ Deno.serve(async (req: Request) => {
         }, update.status as string | undefined);
       }
 
-      return jsonResponse({ status: "ok", tracking_code: code, rastreio: meRes.data });
+      return jsonResponse({ status: "ok", tracking_code: code, rastreio: info });
     }
 
     return jsonResponse({ error: "action invalida" }, 400);
