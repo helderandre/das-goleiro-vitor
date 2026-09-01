@@ -27,14 +27,33 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function updateTrackingCode(orderId: string, trackingCode: string) {
   const supabase = await createClient()
 
+  const code = trackingCode.trim() || null
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("tracking_code")
+    .eq("id", orderId)
+    .single()
+
+  // Escrita idêntica não gera evento nem revalidação à toa.
+  if ((order?.tracking_code ?? null) === code) return { success: true }
+
   const { error } = await supabase
     .from("orders")
-    .update({ tracking_code: trackingCode || null })
+    .update({ tracking_code: code })
     .eq("id", orderId)
 
   if (error) {
     return { error: error.message }
   }
+
+  // Override manual sobrescreve o que veio do Melhor Envio: fica registrado.
+  await supabase.from("order_events").insert({
+    order_id: orderId,
+    type: "tracking_code_edited",
+    actor: "admin",
+    payload: { from: order?.tracking_code ?? null, to: code },
+  })
 
   revalidatePath("/pedidos")
   revalidatePath(`/pedidos/${orderId}`)
