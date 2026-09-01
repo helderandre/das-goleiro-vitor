@@ -16,8 +16,11 @@ import {
 import {
   Calculator,
   Check,
+  ChevronRight,
   ExternalLink,
+  HelpCircle,
   Loader2,
+  MapPin,
   Package,
   Printer,
   Truck,
@@ -47,6 +50,16 @@ interface OrderShippingActionsProps {
   cartId: string | null
   labelUrl: string | null
   trackingCode: string | null
+}
+
+/** O que cada passo faz de fato, para o admin não precisar adivinhar. */
+const stepHints: Record<string, string> = {
+  add_to_cart:
+    "cria o envio no Melhor Envio com o remetente cadastrado, o endereço do pedido e os dados do cliente.",
+  checkout:
+    "debita o saldo da sua carteira no Melhor Envio. Não marca o pedido como enviado.",
+  generate: "emite a etiqueta no Melhor Envio.",
+  print: "abre o PDF da etiqueta para impressão.",
 }
 
 const shippingLabels: Record<string, string> = {
@@ -119,6 +132,8 @@ export function OrderShippingActions({
     },
   ]
 
+  const nextStep = steps.find((step) => !step.done)
+
   return (
     <div className="space-y-4">
       <div className="space-y-2 text-sm">
@@ -144,6 +159,59 @@ export function OrderShippingActions({
           </div>
         )}
       </div>
+
+      <details className="group rounded-md border bg-muted/40 px-3 py-2">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          <HelpCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+          {nextStep ? (
+            <span>
+              Próximo passo:{" "}
+              <span className="text-primary">{nextStep.label}</span>
+            </span>
+          ) : (
+            <span>Etiqueta pronta — falta postar na transportadora</span>
+          )}
+          <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+        </summary>
+
+        <ol className="mt-3 space-y-2 text-xs text-muted-foreground">
+          {steps.map((step, index) => (
+            <li key={step.key} className="flex gap-2">
+              <span
+                className={
+                  step.done
+                    ? "flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-600/15 text-green-600"
+                    : "flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium"
+                }
+              >
+                {step.done ? <Check className="h-3 w-3" /> : index + 1}
+              </span>
+              <span className={step.done ? "line-through" : undefined}>
+                <span className="font-medium text-foreground">{step.label}</span>
+                {" — "}
+                {stepHints[step.key]}
+              </span>
+            </li>
+          ))}
+          <li className="flex gap-2">
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted">
+              <MapPin className="h-3 w-3" />
+            </span>
+            <span>
+              <span className="font-medium text-foreground">Postar</span>
+              {" — "}
+              leve o pacote etiquetado à transportadora. O rastreio e o status
+              chegam sozinhos pelo webhook do Melhor Envio; &ldquo;Rastrear&rdquo;
+              só força a consulta antes disso.
+            </span>
+          </li>
+        </ol>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          &ldquo;Cotar frete&rdquo; é opcional: o serviço já veio da escolha do
+          cliente no checkout. Use apenas para trocar de transportadora.
+        </p>
+      </details>
 
       <div className="flex flex-wrap gap-2">
         <Button
