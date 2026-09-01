@@ -12,6 +12,7 @@ import {
   createPixPayment,
   checkPaymentStatus,
 } from "@/app/(dashboard)/pedidos/actions"
+import { getPaymentDisplay } from "@/lib/payment-methods"
 
 interface PixData {
   pix_qr_code: string | null
@@ -26,6 +27,7 @@ interface OrderPaymentActionsProps {
   paymentId: string | null
   paymentStatus: string | null
   paymentMethod: string | null
+  paymentType: string | null
   paidAt: string | null
   preferenceId: string | null
 }
@@ -45,6 +47,7 @@ export function OrderPaymentActions({
   paymentId,
   paymentStatus,
   paymentMethod,
+  paymentType,
   paidAt,
   preferenceId,
 }: OrderPaymentActionsProps) {
@@ -52,6 +55,9 @@ export function OrderPaymentActions({
   const [running, setRunning] = useState<string | null>(null)
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const [pix, setPix] = useState<PixData | null>(null)
+
+  const paymentDisplay = getPaymentDisplay(paymentMethod, paymentType)
+  const PaymentIcon = paymentDisplay.icon
 
   function run(action: string, fn: () => Promise<{ error?: string } & Record<string, unknown>>) {
     setRunning(action)
@@ -101,10 +107,13 @@ export function OrderPaymentActions({
             <span className="text-muted-foreground">Pagamento</span>
             <span className="font-mono text-xs">{paymentId}</span>
           </div>
-          {paymentMethod && (
+          {paymentDisplay.hasData && (
             <div className="flex items-center justify-between gap-2">
               <span className="text-muted-foreground">Meio</span>
-              <span className="uppercase">{paymentMethod}</span>
+              <span className="flex items-center gap-1.5">
+                <PaymentIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                {paymentDisplay.displayLabel}
+              </span>
             </div>
           )}
           {paidAt && (
