@@ -42,8 +42,29 @@ Deno.serve(async (req: Request) => {
 
     // POST: Renovar token
     if (req.method === "POST") {
-      const body = await req.json();
-      if (!body.refresh_token) return new Response(JSON.stringify({ error: "refresh_token obrigatorio" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const body = await req.json().catch(() => ({} as Record<string, unknown>));
+      let refreshToken = body.refresh_token as string | undefined;
+
+      /*
+       * Sem refresh_token no corpo, a function busca o ativo no banco. É o modo
+       * usado pelo cron: o token nunca precisa viajar na requisição. Protegido
+       * por segredo compartilhado, porque esta function é publica (o callback
+       * OAuth chega pelo navegador, sem JWT).
+       */
+      if (!refreshToken) {
+        const cronSecret = Deno.env.get("ME_CRON_SECRET") || "";
+        const provided = req.headers.get("x-cron-secret") || "";
+        if (!cronSecret || provided !== cronSecret) {
+          return new Response(JSON.stringify({ error: "Nao autorizado" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        const { data: row } = await sb.from("melhor_envio_tokens").select("refresh_token, expires_at").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        if (!row?.refresh_token) {
+          return new Response(JSON.stringify({ error: "Nenhum token ativo para renovar" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        refreshToken = row.refresh_token as string;
+      }
+      body.refresh_token = refreshToken;
       const res = await fetch(`${BASE_URL}/oauth/token`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ grant_type: "refresh_token", refresh_token: body.refresh_token, client_id: CLIENT_ID, client_secret: CLIENT_SECRET }) });
       const data = await res.json();
       if (!res.ok) return new Response(JSON.stringify({ error: "Erro ao renovar", detalhes: data }), { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
