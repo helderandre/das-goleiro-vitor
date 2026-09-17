@@ -4,8 +4,15 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { callEdgeFunction } from "@/lib/edge-functions"
 
-/** Todas as credenciais em uso são de teste (ver tabela mp_credentials). */
-const MP_ENVIRONMENT = "sandbox"
+/**
+ * Ambiente do Mercado Pago, vindo de `MP_ENVIRONMENT`.
+ *
+ * As functions escolhem a linha de `mp_credentials` por este valor. Deixá-lo
+ * fixo obrigava a alterar e reimplantar o dashboard para trocar de ambiente.
+ * Padrão `sandbox` para não cobrar de verdade sem intenção; em produção defina
+ * `MP_ENVIRONMENT=production` no ambiente do deploy.
+ */
+const MP_ENVIRONMENT = process.env.MP_ENVIRONMENT ?? "sandbox"
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = await createClient()
