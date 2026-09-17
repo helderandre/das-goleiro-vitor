@@ -4,6 +4,14 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const MELHOR_ENVIO_API = Deno.env.get("MELHOR_ENVIO_API_URL") || "https://sandbox.melhorenvio.com.br";
 const CLIENT_ID = Deno.env.get("CLIENT_ID_ME") || "";
 const CLIENT_SECRET = Deno.env.get("SECRET_ME") || "";
+/*
+ * Servicos oferecidos pela loja, por id do Melhor Envio:
+ * 1 PAC, 2 SEDEX, 17 Mini Envios (Correios); 3 .Package, 4 .Com (Jadlog);
+ * 31 Loggi Express; 33 JeT Standard; 35 Total Express.
+ * Os indisponiveis para o trecho voltam com `error` e sao filtrados adiante.
+ */
+const DEFAULT_SERVICES = "1,2,3,4,17,31,33,35";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
@@ -79,7 +87,13 @@ Deno.serve(async (req: Request) => {
       volumes: [{ height: body.altura, width: body.largura, length: body.comprimento, weight: body.peso }],
       options: { insurance_value: body.valor_seguro || 0, receipt: body.aviso_recebimento || false, own_hand: body.mao_propria || false },
     };
-    if (body.servicos) payload.services = body.servicos;
+    /*
+     * `services` explicito e obrigatorio na pratica: sem ele, a API de
+     * producao devolve UM unico servico (e como objeto, nao array), enquanto o
+     * sandbox devolvia a lista inteira. Pedindo os servicos nominalmente, ela
+     * responde com todos, cada indisponivel trazendo seu proprio `error`.
+     */
+    payload.services = body.servicos || DEFAULT_SERVICES;
 
     const meResponse = await fetch(`${MELHOR_ENVIO_API}/api/v2/me/shipment/calculate`, {
       method: "POST",
@@ -90,8 +104,16 @@ Deno.serve(async (req: Request) => {
     const meData = await meResponse.json();
     if (!meResponse.ok) return new Response(JSON.stringify({ error: "Erro na API do Melhor Envio", detalhes: meData }), { status: meResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    // Filtrar por transportadora se solicitado, senao retorna TODAS
-    let resultados = Array.isArray(meData) ? meData : [];
+    /*
+     * A API alterna a forma da resposta: array quando ha varios servicos, e um
+     * objeto solto quando ha so um. Tratar apenas o array fazia a cotacao
+     * voltar vazia justamente nos CEPs atendidos por uma transportadora so.
+     */
+    let resultados: Record<string, unknown>[] = Array.isArray(meData)
+      ? meData
+      : meData && typeof meData === "object"
+      ? [meData as Record<string, unknown>]
+      : [];
 
     const filtro = (body.filtro_transportadora || "").toLowerCase().trim();
     if (filtro) {
