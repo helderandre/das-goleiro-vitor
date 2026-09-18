@@ -355,7 +355,7 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
             {data.products.map((p) => (
               <Link
                 key={p.id}
-                href={`/produtos/${p.id}`}
+                href={`/produtos/${p.id}/editar`}
                 className="flex items-center gap-3.5 p-3.5 active:bg-foreground/5"
               >
                 {p.coverUrl ? (

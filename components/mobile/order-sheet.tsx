@@ -99,10 +99,10 @@ export function OrderSheet({
       open={open}
       onOpenChange={onOpenChange}
       shouldScaleBackground
-      snapPoints={[0.72, 1]}
-      fadeFromIndex={0}
     >
-      <DrawerContent className="h-full max-h-[calc(100svh-env(safe-area-inset-top)-0.5rem)] data-[vaul-drawer-direction=bottom]:max-h-[calc(100svh-env(safe-area-inset-top)-0.5rem)]">
+      {/* Altura do conteúdo (sem snap points): as ações do fim ficam sempre
+          visíveis; se o pedido for longo, a sheet rola. */}
+      <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[calc(100svh-env(safe-area-inset-top)-0.5rem)]">
         {o && (
           <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-5 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
             <div className="flex items-start justify-between gap-3">
@@ -202,7 +202,7 @@ export function OrderSheet({
               </div>
             </div>
 
-            <div className="mt-auto flex flex-col gap-2.5 pt-2">
+            <div className="flex flex-col gap-2.5 pt-1">
               {(waLink || trackUrl) && (
                 <div className="grid grid-cols-2 gap-2.5">
                   {waLink && (

@@ -186,7 +186,8 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
 
   for (const o of actionOrders ?? []) {
     const customer = o.user_id ? customerById.get(o.user_id) : undefined
-    const shortId = o.short_id ?? o.id.slice(0, 6).toUpperCase()
+    // short_id já vem com "#" do banco; o front adiciona o seu.
+    const shortId = (o.short_id ?? o.id.slice(0, 6).toUpperCase()).replace(/^#/, "")
     const payment = getPaymentDisplay(o.mp_payment_method, o.mp_payment_type)
     const order: MobileOrder = {
       id: o.id,
@@ -253,7 +254,7 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
   for (const m of unreadMessages ?? []) {
     const prev = unreadByOrder.get(m.order_id)
     unreadByOrder.set(m.order_id, {
-      shortId: m.orders?.short_id ?? m.order_id.slice(0, 6).toUpperCase(),
+      shortId: (m.orders?.short_id ?? m.order_id.slice(0, 6).toUpperCase()).replace(/^#/, ""),
       count: (prev?.count ?? 0) + 1,
     })
   }
