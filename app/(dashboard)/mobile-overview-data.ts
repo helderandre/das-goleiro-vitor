@@ -97,7 +97,7 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
     { data: nextEvent },
     { data: products },
   ] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("id", user!.id).single(),
+    supabase.from("profiles").select("full_name, avatar_url").eq("id", user!.id).single(),
     supabase
       .from("orders")
       .select("total, mp_fee_amount, shipping_price, mp_paid_at, created_at")
@@ -302,10 +302,8 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
     todayKey: dayKey(now),
     nowMs: now.getTime(),
     firstName: nameParts[0]!,
-    initials: nameParts
-      .slice(0, 2)
-      .map((p) => p[0]!.toUpperCase())
-      .join(""),
+    fullName,
+    avatarUrl: profile?.avatar_url ?? null,
     payments,
     tasks: [...urgentTasks, ...shippingTasks, ...messageTasks, ...leadTasks],
     productsCount: productsCount ?? 0,

@@ -54,7 +54,7 @@ export function useMobileShell() {
 
 interface MobileShellProps {
   children: React.ReactNode
-  user: { name: string; email: string }
+  user: { name: string; email: string; avatar_url?: string | null }
   /** Pedidos pagos esperando envio + pedidos que pedem atenção. */
   ordersBadge: number
   newLeadsCount: number
@@ -337,6 +337,41 @@ function initials(name: string) {
     .join("")
 }
 
+/** Foto de perfil; sem foto, as iniciais sobre o amarelo da marca. */
+export function UserAvatar({
+  name,
+  avatarUrl,
+  className,
+}: {
+  name: string
+  avatarUrl?: string | null
+  className?: string
+}) {
+  const [failed, setFailed] = React.useState(false)
+  if (avatarUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- URL externa do Supabase Storage/OAuth
+      <img
+        src={avatarUrl}
+        alt=""
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+        className={cn("shrink-0 rounded-full bg-muted object-cover", className)}
+      />
+    )
+  }
+  return (
+    <span
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground",
+        className,
+      )}
+    >
+      {initials(name)}
+    </span>
+  )
+}
+
 function MoreSheet({
   open,
   onOpenChange,
@@ -345,7 +380,7 @@ function MoreSheet({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  user: { name: string; email: string }
+  user: { name: string; email: string; avatar_url?: string | null }
   newLeadsCount: number
 }) {
   const router = useRouter()
@@ -367,9 +402,11 @@ function MoreSheet({
     <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground>
       <DrawerContent className="px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-3.5 pt-4 pb-[18px]">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
-            {initials(user.name)}
-          </span>
+          <UserAvatar
+            name={user.name}
+            avatarUrl={user.avatar_url}
+            className="size-12 text-base"
+          />
           <div className="flex min-w-0 flex-col">
             <DrawerTitle className="truncate text-lg font-bold">
               {user.name}

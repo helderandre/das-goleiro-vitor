@@ -22,7 +22,7 @@ import {
 
 import { createPost } from "@/app/(dashboard)/blog/actions"
 import { cn } from "@/lib/utils"
-import { useMobileShell } from "./mobile-shell"
+import { UserAvatar, useMobileShell } from "./mobile-shell"
 import { OrderSheet, type MobileOrder } from "./order-sheet"
 import { formatBRL } from "./format"
 
@@ -56,7 +56,8 @@ export interface MobileOverviewData {
   /** Epoch ms da renderização no servidor; base de "7 dias" e "30 dias". */
   nowMs: number
   firstName: string
-  initials: string
+  fullName: string
+  avatarUrl: string | null
   payments: MobilePayment[]
   tasks: MobileTask[]
   productsCount: number
@@ -161,9 +162,13 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
             type="button"
             onClick={openMore}
             aria-label="Conta e mais opções"
-            className="flex size-11 items-center justify-center rounded-full bg-primary text-[15px] font-bold text-primary-foreground"
+            className="rounded-full"
           >
-            {data.initials}
+            <UserAvatar
+              name={data.fullName}
+              avatarUrl={data.avatarUrl}
+              className="size-11 text-[15px]"
+            />
           </button>
         </div>
       </header>
