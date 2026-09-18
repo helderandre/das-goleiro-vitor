@@ -3,9 +3,26 @@
 import * as React from "react"
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react"
 import {
-  ArrowDown,
-  ArrowUp,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import {
   Check,
+  GripVertical,
   Images,
   Loader2,
   MousePointerClick,
@@ -468,13 +485,6 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
     if (urls.length) updateAttributes({ images: [...images, ...urls] })
   }
 
-  function move(i: number, delta: number) {
-    const next = [...images]
-    const [item] = next.splice(i, 1)
-    next.splice(i + delta, 0, item)
-    updateAttributes({ images: next })
-  }
-
   return (
     <NodeViewWrapper className="my-4" data-type="image-gallery">
       <BlockPreview
@@ -522,7 +532,7 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
         }}
         icon={Images}
         title="Galeria"
-        description={images.length ? `${images.length} ${images.length === 1 ? "foto" : "fotos"} · use as setas para reordenar` : "Adicione as fotos da galeria"}
+        description={images.length ? `${images.length} ${images.length === 1 ? "foto" : "fotos"} · segure a alça e arraste para reordenar` : "Adicione as fotos da galeria"}
         onRemove={deleteNode}
         onDone={() => {
           setOpen(false)
@@ -530,29 +540,11 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
         }}
       >
         {images.length > 0 && (
-          <div className="flex flex-col divide-y overflow-hidden rounded-2xl bg-muted/60">
-            {images.map((src, i) => (
-              <div key={`${src}-${i}`} className="flex items-center gap-2.5 py-2 pr-2 pl-2">
-                {/* eslint-disable-next-line @next/next/no-img-element -- imagem do post no Storage */}
-                <img src={src} alt="" className="size-[54px] shrink-0 rounded-[10px] object-cover" />
-                <span className="grow text-sm font-semibold">Foto {i + 1}</span>
-                <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => move(i, -1)} className="flex size-10 items-center justify-center rounded-xl disabled:opacity-30">
-                  <ArrowUp className="size-[18px]" />
-                </button>
-                <button type="button" aria-label="Descer" disabled={i === images.length - 1} onClick={() => move(i, 1)} className="flex size-10 items-center justify-center rounded-xl disabled:opacity-30">
-                  <ArrowDown className="size-[18px]" />
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Remover foto ${i + 1}`}
-                  onClick={() => updateAttributes({ images: images.filter((_, j) => j !== i) })}
-                  className="flex size-10 items-center justify-center rounded-xl text-destructive"
-                >
-                  <X className="size-[18px]" />
-                </button>
-              </div>
-            ))}
-          </div>
+          <SortablePhotos
+            images={images}
+            onReorder={(next) => updateAttributes({ images: next })}
+            onRemove={(i) => updateAttributes({ images: images.filter((_, j) => j !== i) })}
+          />
         )}
 
         <div className="grid grid-cols-2 gap-2.5">
@@ -599,6 +591,85 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
         </span>
       </BlockSheet>
     </NodeViewWrapper>
+  )
+}
+
+/**
+ * Lista das fotos com arrastar e soltar pela alça. A alça tem touch-action
+ * none e a lista fica fora do gesto da sheet (data-vaul-no-drag), para
+ * arrastar a foto não fechar a gaveta nem rolar a página.
+ */
+function SortablePhotos({
+  images,
+  onReorder,
+  onRemove,
+}: {
+  images: string[]
+  onReorder: (next: string[]) => void
+  onRemove: (index: number) => void
+}) {
+  // A mesma foto pode entrar duas vezes na galeria: o id leva a posição.
+  const ids = images.map((src, i) => `${i}::${src}`)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  function onDragEnd({ active, over }: DragEndEvent) {
+    if (!over || active.id === over.id) return
+    const from = ids.indexOf(String(active.id))
+    const to = ids.indexOf(String(over.id))
+    if (from < 0 || to < 0) return
+    onReorder(arrayMove(images, from, to))
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        <div data-vaul-no-drag className="flex flex-col gap-1.5">
+          {images.map((src, i) => (
+            <SortablePhoto key={ids[i]} id={ids[i]} src={src} index={i} onRemove={() => onRemove(i)} />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  )
+}
+
+function SortablePhoto({ id, src, index, onRemove }: { id: string; src: string; index: number; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id })
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        "relative flex items-center gap-2.5 rounded-2xl bg-muted/60 py-2 pr-2 pl-1",
+        isDragging && "z-10 scale-[1.02] bg-muted shadow-xl ring-2 ring-primary",
+      )}
+    >
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        aria-label={`Arrastar foto ${index + 1}`}
+        className="flex h-[54px] w-9 shrink-0 touch-none items-center justify-center rounded-xl text-muted-foreground active:text-primary"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-5" />
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element -- imagem do post no Storage */}
+      <img src={src} alt="" className="size-[54px] shrink-0 rounded-[10px] object-cover" draggable={false} />
+      <span className="grow text-sm font-semibold">Foto {index + 1}</span>
+      <button
+        type="button"
+        aria-label={`Remover foto ${index + 1}`}
+        onClick={onRemove}
+        className="flex size-10 items-center justify-center rounded-xl text-destructive"
+      >
+        <X className="size-[18px]" />
+      </button>
+    </div>
   )
 }
 
