@@ -1,6 +1,20 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+/**
+ * Pedido não pago em 12h é cancelado por expire_unpaid_orders (pg_cron). O Pix
+ * vence no mesmo instante, para que não possa ser pago depois do cancelamento.
+ */
+const ORDER_TTL_MS = 12 * 60 * 60 * 1000;
+
+/** O MP só aceita o Pix se ele vencer entre 30 minutos e 30 dias a partir de agora. */
+const PIX_MIN_REMAINING_MS = 30 * 60 * 1000;
+
+/** Formato da documentação do MP, em horário de Brasília (sem horário de verão desde 2019). */
+function toMpDate(date: Date): string {
+  return new Date(date.getTime() - 3 * 60 * 60 * 1000).toISOString().replace("Z", "-03:00");
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -84,7 +98,7 @@ Deno.serve(async (req: Request) => {
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .select(`
-        id, short_id, total, shipping_price, user_id, status,
+        id, short_id, total, shipping_price, user_id, status, created_at,
         order_items (
           id, product_title, quantity, unit_price, product_type
         )
@@ -109,6 +123,26 @@ Deno.serve(async (req: Request) => {
     if (order.status === "paid") {
       return new Response(JSON.stringify({ error: "Pedido j\u00e1 est\u00e1 pago" }), {
         status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (order.status !== "pending") {
+      return new Response(JSON.stringify({ error: `Pedido n\u00e3o est\u00e1 aguardando pagamento (${order.status})` }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const expiresAt = new Date(new Date(order.created_at).getTime() + ORDER_TTL_MS);
+    const remainingMs = expiresAt.getTime() - Date.now();
+    const minRemainingMs = payment_method === "pix" ? PIX_MIN_REMAINING_MS : 0;
+    if (remainingMs <= minRemainingMs) {
+      return new Response(JSON.stringify({
+        error: "O prazo de pagamento deste pedido terminou. Fa\u00e7a um novo pedido.",
+        expires_at: expiresAt.toISOString(),
+      }), {
+        status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -177,6 +211,8 @@ Deno.serve(async (req: Request) => {
       }
     } else if (payment_method === "pix") {
       paymentBody.payment_method_id = "pix";
+      // Sem isto o MP aplica 24h e o Pix seguiria pag\u00e1vel depois do cancelamento.
+      paymentBody.date_of_expiration = toMpDate(expiresAt);
     }
 
     // Chamar API do Mercado Pago

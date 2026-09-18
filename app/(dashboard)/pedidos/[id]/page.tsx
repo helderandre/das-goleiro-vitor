@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { AlertTriangle, ArrowLeft, MapPin, MessageSquare, User, Package } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Clock, MapPin, MessageSquare, User, Package } from "lucide-react"
 import { getPaymentDisplay } from "@/lib/payment-methods"
 import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
@@ -114,6 +114,11 @@ export default async function PedidoDetailPage({
   // Pedidos gravados direto pela loja (sem passar pela create_order) podem ter
   // total sem o frete somado — o admin precisa ver isso.
   const totalMismatch = Math.abs(subtotal + shippingPrice - total) > 0.01
+  // Mesmo prazo de expire_unpaid_orders e das cobranças no Mercado Pago.
+  const autoCancelAt =
+    order.status === "pending" && order.created_at
+      ? new Date(new Date(order.created_at).getTime() + 12 * 60 * 60 * 1000)
+      : null
 
   return (
     <div className="space-y-6">
@@ -142,6 +147,36 @@ export default async function PedidoDetailPage({
           currentStatus={order.status ?? "pending"}
         />
       </div>
+
+      {order.needs_attention && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="font-medium text-destructive">Este pedido precisa de revisão</p>
+            <p className="text-muted-foreground">
+              {order.attention_reason ?? "Verifique o pagamento e o status do pedido."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {autoCancelAt && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          <Clock className="h-4 w-4 shrink-0" />
+          <span>
+            Aguardando pagamento. Se não for pago, será cancelado automaticamente em{" "}
+            <span className="font-medium text-foreground">
+              {autoCancelAt.toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            .
+          </span>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Items + Timeline */}

@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye } from "lucide-react"
+import { AlertTriangle, Eye } from "lucide-react"
 import { OrderStatusBadge } from "@/components/order-status-badge"
 import { OrderFilters } from "./filters"
 
@@ -30,7 +30,7 @@ export default async function PedidosPage({
 
   let query = supabase
     .from("orders")
-    .select("id, short_id, total, status, created_at, user_id")
+    .select("id, short_id, total, status, created_at, user_id, needs_attention, attention_reason")
     .order("created_at", { ascending: false })
 
   if (status && status !== "all") {
@@ -128,7 +128,17 @@ export default async function PedidosPage({
                         })}
                       </TableCell>
                       <TableCell>
-                        <OrderStatusBadge status={order.status} />
+                        <span className="inline-flex items-center gap-1.5">
+                          <OrderStatusBadge status={order.status} />
+                          {order.needs_attention && (
+                            <AlertTriangle
+                              className="h-4 w-4 text-destructive"
+                              aria-label={order.attention_reason ?? "Precisa de revisão"}
+                            >
+                              <title>{order.attention_reason ?? "Precisa de revisão"}</title>
+                            </AlertTriangle>
+                          )}
+                        </span>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                         {new Date(order.created_at!).toLocaleDateString(

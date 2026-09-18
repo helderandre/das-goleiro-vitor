@@ -287,6 +287,19 @@ Deno.serve(async (req: Request) => {
     const willTransition = newStatus !== null && canTransition(order.status, newStatus);
     if (willTransition) update.status = newStatus;
 
+    /*
+     * Pagamento aprovado com o pedido já cancelado — por exemplo, vencido pelo
+     * prazo de 12h. canTransition não deixa voltar para "paid" (o estoque já
+     * foi devolvido e alguém precisa decidir entre estornar e reativar), mas o
+     * dinheiro entrou: não pode passar em silêncio.
+     */
+    if (payment.status === "approved" && order.status === "cancelled") {
+      update.needs_attention = true;
+      update.attention_reason =
+        `Pagamento de R$ ${Number(payment.transaction_amount ?? 0).toFixed(2)} aprovado ` +
+        `com o pedido já cancelado. Estornar ou reativar o pedido.`;
+    }
+
     const { error: updateError } = await supabaseAdmin
       .from("orders")
       .update(update)

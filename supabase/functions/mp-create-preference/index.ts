@@ -9,9 +9,12 @@ const corsHeaders = {
 
 const SITE_URL = "https://goleirovitor.com.br";
 
-/** Validade da cobrança: boleto precisa de prazo maior. */
-const EXPIRATION_HOURS_WITHOUT_TICKET = 24;
-const EXPIRATION_HOURS_WITH_TICKET = 72;
+/**
+ * Pedido não pago em 12h é cancelado por expire_unpaid_orders (pg_cron). A
+ * cobrança vence no mesmo instante, para que nada possa ser aprovado depois do
+ * cancelamento. Boleto fica de fora: a compensação leva até 3 dias úteis.
+ */
+const ORDER_TTL_MS = 12 * 60 * 60 * 1000;
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -43,7 +46,6 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const { order_id, environment = "sandbox" } = body;
     const site_url = body.site_url || SITE_URL;
-    const allowTicket = body.allow_ticket !== false;
 
     if (!order_id) return json({ error: "order_id é obrigatório" }, 400);
 
@@ -69,7 +71,7 @@ Deno.serve(async (req: Request) => {
     const { data: order } = await supabaseAdmin
       .from("orders")
       .select(
-        `id, short_id, total, subtotal, shipping_price, me_service_name, user_id, status,
+        `id, short_id, total, subtotal, shipping_price, me_service_name, user_id, status, created_at,
          order_items ( id, product_id, product_title, quantity, unit_price, product_type )`,
       )
       .eq("id", order_id)
@@ -91,6 +93,14 @@ Deno.serve(async (req: Request) => {
 
     if (order.status === "paid") {
       return json({ error: "Pedido já está pago" }, 409);
+    }
+    if (order.status !== "pending") {
+      return json({ error: `Pedido não está aguardando pagamento (${order.status})` }, 409);
+    }
+
+    const expiresAt = new Date(new Date(order.created_at).getTime() + ORDER_TTL_MS);
+    if (expiresAt.getTime() <= Date.now()) {
+      return json({ error: "O prazo de pagamento deste pedido terminou. Faça um novo pedido." }, 410);
     }
 
     // Dados do pagador: do dono do pedido, não de quem está criando a cobrança.
@@ -140,13 +150,6 @@ Deno.serve(async (req: Request) => {
         .eq("id", order.id);
     }
 
-    const hasEbookOnly = (order.order_items ?? []).every(
-      (item: Record<string, any>) => item.product_type === "ebook",
-    );
-
-    const expirationHours =
-      allowTicket && !hasEbookOnly ? EXPIRATION_HOURS_WITH_TICKET : EXPIRATION_HOURS_WITHOUT_TICKET;
-    const expiresAt = new Date(Date.now() + expirationHours * 3600 * 1000);
 
     // external_reference aceita apenas [A-Za-z0-9_-]; o short_id tem '#'.
     const externalReference = String(order.id);
@@ -160,8 +163,8 @@ Deno.serve(async (req: Request) => {
         email: payerProfile?.email || "",
       },
       payment_methods: {
-        // E-book é entrega imediata: boleto atrasaria demais.
-        excluded_payment_types: hasEbookOnly || !allowTicket ? [{ id: "ticket" }] : [],
+        // Boleto compensa em até 3 dias úteis e não cabe no prazo de 12h.
+        excluded_payment_types: [{ id: "ticket" }],
         installments: 12,
       },
       back_urls: {
