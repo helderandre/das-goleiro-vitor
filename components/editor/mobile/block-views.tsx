@@ -47,6 +47,14 @@ import type { ProductCardAttrs } from "../extensions/product-card"
 /* Base                                                                       */
 /* -------------------------------------------------------------------------- */
 
+/** Fecha a sheet e só então remove o bloco (a animação de saída termina antes). */
+function useDeferredDelete(deleteNode: () => void, setOpen: (o: boolean) => void) {
+  return React.useCallback(() => {
+    setOpen(false)
+    setTimeout(deleteNode, 350)
+  }, [deleteNode, setOpen])
+}
+
 function BlockSheet({
   open,
   onOpenChange,
@@ -70,6 +78,18 @@ function BlockSheet({
   doneDisabled?: boolean
   children: React.ReactNode
 }) {
+  // Dentro de um node view do TipTap a gaveta fechada não termina de sair
+  // sozinha e a trava de rolagem da página fica presa. Desmontar depois da
+  // animação de saída limpa a trava.
+  const [mounted, setMounted] = React.useState(open)
+  if (open && !mounted) setMounted(true)
+  React.useEffect(() => {
+    if (open) return
+    const t = setTimeout(() => setMounted(false), 400)
+    return () => clearTimeout(t)
+  }, [open])
+  if (!mounted) return null
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={false} repositionInputs={false}>
       <DrawerContent className="gap-[18px] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] data-[vaul-drawer-direction=bottom]:max-h-[92svh]">
@@ -82,7 +102,7 @@ function BlockSheet({
             <DrawerDescription className="text-[13px]">{description}</DrawerDescription>
           </div>
         </div>
-        <div className="-mx-5 flex flex-col gap-[18px] overflow-y-auto px-5">{children}</div>
+        <div data-vaul-no-drag className="-mx-5 flex min-h-0 flex-col gap-[18px] overflow-y-auto overscroll-contain px-5">{children}</div>
         <div className="flex gap-2.5">
           <button
             type="button"
@@ -193,6 +213,7 @@ export function MobileButtonBlockView({ node, updateAttributes, deleteNode, sele
   const [open, setOpen] = React.useState(label === "Clique aqui" && url === "#" && !refSlug)
   const [products, setProducts] = React.useState<RefItem[] | null>(null)
   const [posts, setPosts] = React.useState<RefItem[] | null>(null)
+  const removeBlock = useDeferredDelete(deleteNode, setOpen)
 
   React.useEffect(() => {
     if (!open || products) return
@@ -262,7 +283,7 @@ export function MobileButtonBlockView({ node, updateAttributes, deleteNode, sele
         icon={MousePointerClick}
         title="Botão"
         description="Leva o leitor para um livro, um post ou um link"
-        onRemove={deleteNode}
+        onRemove={removeBlock}
         onDone={() => setOpen(false)}
       >
         <div className="flex flex-col items-center gap-1.5 rounded-[18px] border border-dashed bg-background p-4">
@@ -377,13 +398,14 @@ export function MobileVideoBlockView({ node, updateAttributes, deleteNode, selec
   const src: string = node.attrs.src ?? ""
   const [open, setOpen] = React.useState(!src)
   const [input, setInput] = React.useState(src)
+  const removeBlock = useDeferredDelete(deleteNode, setOpen)
   const embed = embedUrl(input)
   const provider = embed?.includes("vimeo") ? "Vimeo" : "YouTube"
 
   function done() {
     if (!embed) {
-      if (!src) deleteNode()
-      setOpen(false)
+      if (!src) removeBlock()
+      else setOpen(false)
       return
     }
     updateAttributes({ src: embed })
@@ -419,7 +441,7 @@ export function MobileVideoBlockView({ node, updateAttributes, deleteNode, selec
         icon={Video}
         title="Vídeo"
         description="YouTube ou Vimeo, pelo link"
-        onRemove={deleteNode}
+        onRemove={removeBlock}
         onDone={done}
         doneLabel={embed ? "Salvar vídeo" : "Concluir"}
       >
@@ -465,6 +487,7 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
   const [picking, setPicking] = React.useState(false)
   const [uploading, setUploading] = React.useState(false)
   const fileInput = React.useRef<HTMLInputElement>(null)
+  const removeBlock = useDeferredDelete(deleteNode, setOpen)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const storage = (editor.storage as any).imageGallery as {
@@ -526,18 +549,12 @@ export function MobileGalleryBlockView({ node, updateAttributes, deleteNode, sel
 
       <BlockSheet
         open={open}
-        onOpenChange={(o) => {
-          setOpen(o)
-          if (!o && images.length === 0) deleteNode()
-        }}
+        onOpenChange={(o) => (!o && images.length === 0 ? removeBlock() : setOpen(o))}
         icon={Images}
         title="Galeria"
         description={images.length ? `${images.length} ${images.length === 1 ? "foto" : "fotos"} · segure a alça e arraste para reordenar` : "Adicione as fotos da galeria"}
-        onRemove={deleteNode}
-        onDone={() => {
-          setOpen(false)
-          if (images.length === 0) deleteNode()
-        }}
+        onRemove={removeBlock}
+        onDone={() => (images.length === 0 ? removeBlock() : setOpen(false))}
       >
         {images.length > 0 && (
           <SortablePhotos

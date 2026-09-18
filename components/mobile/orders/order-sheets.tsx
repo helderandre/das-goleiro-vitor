@@ -188,7 +188,7 @@ export function ShippingSheet({ order: o, ...sheet }: SheetProps & { order: Orde
         .join(" · ")}
       className="data-[vaul-drawer-direction=bottom]:max-h-[92svh]"
     >
-      <div className="-mx-5 flex flex-col gap-[18px] overflow-y-auto px-5">
+      <div data-vaul-no-drag className="-mx-5 flex min-h-0 flex-col gap-[18px] overflow-y-auto overscroll-contain px-5">
         {needsService && !quotes && (
           <div className="flex flex-col gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-3.5">
             <span className="text-sm leading-snug">
@@ -563,7 +563,7 @@ export function RefundSheet({ order: o, ...sheet }: SheetProps & { order: Order 
       }
       className="data-[vaul-drawer-direction=bottom]:max-h-[92svh]"
     >
-      <div className="-mx-5 flex flex-col gap-[18px] overflow-y-auto px-5">
+      <div data-vaul-no-drag className="-mx-5 flex min-h-0 flex-col gap-[18px] overflow-y-auto overscroll-contain px-5">
         {hasPayment && (
           <div role="radiogroup" aria-label="Quanto devolver" className="flex flex-col gap-2">
             {options.map((opt) => {
