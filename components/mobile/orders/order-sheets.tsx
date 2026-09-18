@@ -17,6 +17,9 @@ import {
   Truck,
   Undo2,
   XCircle,
+  TriangleAlert,
+  Mail,
+  RotateCcw,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -453,7 +456,15 @@ export function RefundSheet({ order: o, ...sheet }: SheetProps & { order: Order 
   const [kind, setKind] = React.useState<RefundKind>(isShipped ? "products_only" : "full")
   const [amount, setAmount] = React.useState("")
   const [reason, setReason] = React.useState("")
+  const [confirming, setConfirming] = React.useState(false)
   const [isPending, startTransition] = React.useTransition()
+
+  // Cada abertura começa pela escolha, nunca direto na confirmação.
+  const [lastOpen, setLastOpen] = React.useState(sheet.open)
+  if (sheet.open !== lastOpen) {
+    setLastOpen(sheet.open)
+    if (sheet.open) setConfirming(false)
+  }
 
   const productsOnly = Number((o.total - o.shippingPrice).toFixed(2))
   const customValue = Number(amount.replace(/\./g, "").replace(",", "."))
@@ -483,6 +494,62 @@ export function RefundSheet({ order: o, ...sheet }: SheetProps & { order: Order 
       sheet.onOpenChange(false)
       router.refresh()
     })
+  }
+
+  const amountLabel = hasPayment && value > 0 ? formatBRL(value) : null
+
+  if (confirming) {
+    return (
+      <Drawer open={sheet.open} onOpenChange={sheet.onOpenChange} shouldScaleBackground>
+        <DrawerContent className="gap-[18px] px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+          <div className="flex flex-col items-center gap-3 pt-5 text-center">
+            <span className="flex size-[60px] items-center justify-center rounded-[20px] bg-destructive/15 text-destructive">
+              <TriangleAlert className="size-7" strokeWidth={1.8} />
+            </span>
+            <DrawerTitle className="text-[22px] font-extrabold tracking-tight">
+              Isso não pode ser desfeito
+            </DrawerTitle>
+            <DrawerDescription className="text-[15px] leading-normal text-foreground/85">
+              O pedido <strong className="font-mono text-foreground">#{o.shortId}</strong> será cancelado
+              {amountLabel ? (
+                <>
+                  {" "}e <strong className="text-foreground">{amountLabel}</strong> voltam ao cliente pelo Mercado Pago
+                </>
+              ) : null}
+              .
+            </DrawerDescription>
+          </div>
+
+          <ul className="flex flex-col gap-2 rounded-2xl bg-muted/60 p-4 text-sm">
+            <li className="flex gap-2.5"><XCircle className="mt-px size-4 shrink-0 text-destructive" />O pedido vira Cancelado e não volta a Pago.</li>
+            {hasPayment && <li className="flex gap-2.5"><Undo2 className="mt-px size-4 shrink-0 text-destructive" />A devolução no Mercado Pago não tem volta.</li>}
+            <li className="flex gap-2.5"><Mail className="mt-px size-4 shrink-0 text-muted-foreground" />O cliente recebe o e-mail de pagamento cancelado.</li>
+            <li className="flex gap-2.5"><RotateCcw className="mt-px size-4 shrink-0 text-muted-foreground" />O estoque dos livros volta.</li>
+            {reason.trim() && <li className="flex gap-2.5 text-muted-foreground"><FileText className="mt-px size-4 shrink-0" />Motivo: {reason.trim()}</li>}
+          </ul>
+
+          <div className="flex flex-col gap-2.5">
+            <button
+              type="button"
+              onClick={submit}
+              disabled={isPending}
+              className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-destructive text-base font-bold text-white disabled:opacity-60"
+            >
+              {isPending && <Loader2 className="size-4 animate-spin" />}
+              Confirmar cancelamento
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              disabled={isPending}
+              className="h-[50px] rounded-2xl border bg-muted/60 text-base font-semibold"
+            >
+              Voltar
+            </button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    )
   }
 
   return (
@@ -566,11 +633,10 @@ export function RefundSheet({ order: o, ...sheet }: SheetProps & { order: Order 
         <div className="flex flex-col gap-2.5">
           <button
             type="button"
-            onClick={submit}
-            disabled={isPending || !validCustom}
+            onClick={() => setConfirming(true)}
+            disabled={!validCustom}
             className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-destructive text-base font-bold text-white disabled:opacity-50"
           >
-            {isPending && <Loader2 className="size-4 animate-spin" />}
             {hasPayment
               ? `Cancelar e devolver ${validCustom && value > 0 ? formatBRL(value) : ""}`.trim()
               : "Cancelar pedido"}
