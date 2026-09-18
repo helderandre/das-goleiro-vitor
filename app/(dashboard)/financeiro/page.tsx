@@ -33,6 +33,8 @@ import { PaymentStatusChart } from "@/components/charts/payment-status-chart"
 import { PaymentMethodChart } from "@/components/charts/payment-method-chart"
 import Link from "next/link"
 import { getPaymentDisplay } from "@/lib/payment-methods"
+import { MobileFinanceOverview } from "@/components/mobile/finance/finance-overview"
+import { getFinanceTransactions } from "./mobile-finance-data"
 
 const statusLabels: Record<string, string> = {
   pending: "Pendente",
@@ -256,7 +258,7 @@ async function getFinancialData() {
 }
 
 export default async function FinanceiroPage() {
-  const data = await getFinancialData()
+  const [data, mobile] = await Promise.all([getFinancialData(), getFinanceTransactions()])
 
   const isGrowthPositive = data.revenueGrowth >= 0
 
@@ -336,7 +338,11 @@ export default async function FinanceiroPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobileFinanceOverview transactions={mobile.transactions} today={mobile.today} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
         <p className="text-muted-foreground">
@@ -521,5 +527,6 @@ export default async function FinanceiroPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }
