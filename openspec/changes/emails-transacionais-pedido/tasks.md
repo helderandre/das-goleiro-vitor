@@ -3,7 +3,7 @@
 - [x] 1.1 Criar uma API key no Resend com permissão de envio e confirmar que o domínio do remetente aparece como verificado (SPF e DKIM válidos) no painel do Resend
 - [x] 1.2 Cadastrar nos secrets das Edge Functions `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` e `EMAIL_TEST_RECIPIENT` (endereço interno), e verificar com `supabase secrets list` que os quatro aparecem
 - [x] 1.3 Gerar um valor aleatório para `EMAIL_DISPATCH_SECRET`, cadastrá-lo como secret das functions e verificar que aparece em `supabase secrets list`
-- [ ] 1.4 No painel do Resend, cadastrar o webhook apontando para `.../functions/v1/resend-webhook` com os eventos `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened` e `email.clicked`, ligar *open* e *click tracking* no domínio e cadastrar o segredo de assinatura como `RESEND_WEBHOOK_SECRET`; verificar em `supabase secrets list`
+- [x] 1.4 No painel do Resend, cadastrar o webhook apontando para `.../functions/v1/resend-webhook` com os eventos `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened` e `email.clicked`, ligar *open* e *click tracking* no domínio e cadastrar o segredo de assinatura como `RESEND_WEBHOOK_SECRET`; verificar em `supabase secrets list`
 
 ## 2. Banco de dados
 
@@ -44,7 +44,7 @@
 
 - [x] 5.1 Criar a function `resend-webhook` com `verify_jwt = false` no `config.toml`, validando a assinatura Svix sobre o corpo bruto em tempo constante e recusando carimbos com mais de 5 minutos; verificar com um payload assinado localmente (aceito), um com assinatura trocada (401) e um com carimbo antigo (401)
 - [x] 5.2 Associar o evento ao e-mail da fila pelo `data.email_id` e gravar pela RPC da tarefa 2.10; responder 200 sem gravar quando não houver correspondência, e verificar com um `email_id` desconhecido
-- [ ] 5.3 Fazer o deploy e verificar com o botão de teste do painel do Resend que o evento chega e aparece em `email_events`
+- [x] 5.3 Fazer o deploy e verificar com o botão de teste do painel do Resend que o evento chega e aparece em `email_events`
 
 ## 6. Dashboard
 
