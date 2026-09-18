@@ -30,6 +30,7 @@ import { OrderShippingActions } from "@/components/order-shipping-actions"
 import { OrderRefundDialog } from "@/components/order-refund-dialog"
 import { OrderMessages } from "@/components/order-messages"
 import { OrderEmails } from "@/components/order-emails"
+import { OrderCustomerActions } from "@/components/order-customer-actions"
 import { availableManualKinds } from "@/lib/order-email-kinds"
 
 interface ShippingAddress {
@@ -378,6 +379,12 @@ export default async function PedidoDetailPage({
                       {profile.phone}
                     </p>
                   )}
+                  <OrderCustomerActions
+                    name={profile.full_name}
+                    email={profile.email}
+                    phone={profile.phone}
+                    shortId={order.short_id ?? `#${order.id.slice(0, 8)}`}
+                  />
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
