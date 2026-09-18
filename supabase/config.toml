@@ -41,3 +41,9 @@ verify_jwt = false
 # Cancelamento e reembolso: exige admin, verificado dentro da function.
 [functions.mp-refund]
 verify_jwt = false
+
+[functions.send-order-emails]
+verify_jwt = false
+
+[functions.resend-webhook]
+verify_jwt = false

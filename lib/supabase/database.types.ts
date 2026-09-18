@@ -276,6 +276,128 @@ export type Database = {
           },
         ]
       }
+      email_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          occurred_at: string
+          outbox_id: string
+          payload: Json
+          svix_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          occurred_at: string
+          outbox_id: string
+          payload?: Json
+          svix_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          occurred_at?: string
+          outbox_id?: string
+          payload?: Json
+          svix_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_events_outbox_id_fkey"
+            columns: ["outbox_id"]
+            isOneToOne: false
+            referencedRelation: "email_outbox"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          dedupe_key: string
+          delivery_status: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          locked_at: string | null
+          mp_payment_id: string | null
+          next_attempt_at: string
+          order_id: string
+          provider_id: string | null
+          recipient: string | null
+          requested_by: string | null
+          resent_from: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          dedupe_key: string
+          delivery_status?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          locked_at?: string | null
+          mp_payment_id?: string | null
+          next_attempt_at?: string
+          order_id: string
+          provider_id?: string | null
+          recipient?: string | null
+          requested_by?: string | null
+          resent_from?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          dedupe_key?: string
+          delivery_status?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          locked_at?: string | null
+          mp_payment_id?: string | null
+          next_attempt_at?: string
+          order_id?: string
+          provider_id?: string | null
+          recipient?: string | null
+          requested_by?: string | null
+          resent_from?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_outbox_resent_from_fkey"
+            columns: ["resent_from"]
+            isOneToOne: false
+            referencedRelation: "email_outbox"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           city: string | null
@@ -1139,6 +1261,36 @@ export type Database = {
     }
     Functions: {
       check_overdue_and_unblock_alerts: { Args: never; Returns: undefined }
+      claim_email_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          created_at: string
+          dedupe_key: string
+          delivery_status: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          locked_at: string | null
+          mp_payment_id: string | null
+          next_attempt_at: string
+          order_id: string
+          provider_id: string | null
+          recipient: string | null
+          requested_by: string | null
+          resent_from: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "email_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       create_order: {
         Args: {
           p_expires_at?: string
@@ -1151,6 +1303,18 @@ export type Database = {
         }
         Returns: Json
       }
+      email_delivery_weight: { Args: { p_status: string }; Returns: number }
+      email_dispatch_sweep: { Args: never; Returns: undefined }
+      enqueue_order_email: {
+        Args: {
+          p_key: string
+          p_kind: string
+          p_mp_payment_id?: string
+          p_order_id: string
+        }
+        Returns: undefined
+      }
+      expire_unpaid_orders: { Args: never; Returns: number }
       generate_slug: { Args: { title: string }; Returns: string }
       get_melhor_envio_token: {
         Args: never
@@ -1161,7 +1325,21 @@ export type Database = {
           refresh_token: string
         }[]
       }
+      get_sender_zip: { Args: never; Returns: string }
+      kick_email_dispatch: { Args: never; Returns: undefined }
+      record_email_event: {
+        Args: {
+          p_detail: string
+          p_occurred_at: string
+          p_payload: Json
+          p_provider_id: string
+          p_svix_id: string
+          p_type: string
+        }
+        Returns: string
+      }
       release_order_stock: { Args: { p_order_id: string }; Returns: undefined }
+      requeue_order_email: { Args: { p_outbox_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -1180,12 +1358,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1209,11 +1387,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1234,11 +1412,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1259,11 +1437,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1276,11 +1454,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

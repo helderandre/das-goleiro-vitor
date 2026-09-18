@@ -545,3 +545,17 @@ export async function markMessagesAsRead(orderId: string) {
 
   revalidatePath(`/pedidos/${orderId}`)
 }
+
+/**
+ * Reenvia um e-mail do pedido. A RPC confere que quem chama é admin e recusa
+ * se o original ou um reenvio dele ainda estiver na fila.
+ */
+export async function resendOrderEmail(outboxId: string, orderId: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc("requeue_order_email", { p_outbox_id: outboxId })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/pedidos/${orderId}`)
+  return { success: true }
+}

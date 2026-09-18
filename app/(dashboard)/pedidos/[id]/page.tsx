@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { AlertTriangle, ArrowLeft, Clock, MapPin, MessageSquare, User, Package } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Clock, Mail, MapPin, MessageSquare, User, Package } from "lucide-react"
 import { getPaymentDisplay } from "@/lib/payment-methods"
 import { OrderStatusSelect } from "@/components/order-status-select"
 import { OrderTimeline } from "@/components/order-timeline"
@@ -29,6 +29,7 @@ import { OrderPaymentActions } from "@/components/order-payment-actions"
 import { OrderShippingActions } from "@/components/order-shipping-actions"
 import { OrderRefundDialog } from "@/components/order-refund-dialog"
 import { OrderMessages } from "@/components/order-messages"
+import { OrderEmails } from "@/components/order-emails"
 
 interface ShippingAddress {
   street?: string
@@ -69,7 +70,7 @@ export default async function PedidoDetailPage({
 
   if (!order) notFound()
 
-  const [{ data: items }, { data: profile }, { data: messages }] = await Promise.all([
+  const [{ data: items }, { data: profile }, { data: messages }, { data: emails }] = await Promise.all([
     supabase
       .from("order_items")
       .select("*")
@@ -87,7 +88,21 @@ export default async function PedidoDetailPage({
       .select("id, message, sender_role, read_at, created_at")
       .eq("order_id", id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("email_outbox")
+      .select("id, kind, status, delivery_status, recipient, attempts, last_error, created_at, sent_at, resent_from")
+      .eq("order_id", id)
+      .order("created_at", { ascending: true }),
   ])
+
+  const emailIds = (emails ?? []).map((e) => e.id)
+  const { data: emailEvents } = emailIds.length
+    ? await supabase
+        .from("email_events")
+        .select("id, outbox_id, type, occurred_at, detail")
+        .in("outbox_id", emailIds)
+        .order("occurred_at", { ascending: true })
+    : { data: [] }
 
   const address = order.shipping_address as ShippingAddress | null
   const hasPhysicalItems = items?.some((item) => item.product_type !== "ebook") ?? false
@@ -315,6 +330,25 @@ export default async function PedidoDetailPage({
                 orderId={order.id}
                 messages={messages ?? []}
                 unreadCount={unreadCount}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                E-mails
+              </CardTitle>
+              <CardDescription>
+                O que o cliente recebeu sobre este pedido
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OrderEmails
+                orderId={order.id}
+                emails={emails ?? []}
+                events={emailEvents ?? []}
               />
             </CardContent>
           </Card>
