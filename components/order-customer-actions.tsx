@@ -3,6 +3,7 @@
 import { toast } from "sonner"
 import { Copy, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { formatPhone, whatsappOrderLink } from "@/lib/phone"
 
 interface OrderCustomerActionsProps {
   name: string | null
@@ -11,33 +12,13 @@ interface OrderCustomerActionsProps {
   shortId: string
 }
 
-/** "(42) 99817-9043" para celular ou fixo com DDD; senão, como veio. */
-function formatPhone(phone: string): string {
-  const d = phone.replace(/\D/g, "")
-  if (d.length === 11)
-    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
-  if (d.length === 10)
-    return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
-  return phone
-}
-
-/** Número no formato do wa.me: DDI 55 + DDD + número. Null se não reconhecer. */
-function whatsappNumber(phone: string): string | null {
-  const d = phone.replace(/\D/g, "")
-  if (d.length === 10 || d.length === 11) return `55${d}`
-  if ((d.length === 12 || d.length === 13) && d.startsWith("55")) return d
-  return null
-}
-
 export function OrderCustomerActions({
   name,
   email,
   phone,
   shortId,
 }: OrderCustomerActionsProps) {
-  const waNumber = phone ? whatsappNumber(phone) : null
-  const firstName = name?.trim().split(/\s+/)[0]
-  const waText = `Olá${firstName ? `, ${firstName}` : ""}! Aqui é da loja Goleiro Vitor, sobre o seu pedido ${shortId}.`
+  const waLink = whatsappOrderLink(phone, name, shortId)
 
   async function copyData() {
     const text = [name, email, phone ? formatPhone(phone) : null]
@@ -57,10 +38,10 @@ export function OrderCustomerActions({
         <Copy className="h-3.5 w-3.5" />
         Copiar dados
       </Button>
-      {waNumber && (
+      {waLink && (
         <Button size="sm" variant="outline" asChild>
           <a
-            href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`}
+            href={waLink}
             target="_blank"
             rel="noopener noreferrer"
           >

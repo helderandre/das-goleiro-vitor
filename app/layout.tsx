@@ -17,6 +17,12 @@ export const metadata = {
   description: "Painel administrativo do Goleiro Vitor",
 }
 
+export const viewport = {
+  // Deixa o conteúdo ir até as bordas no iPhone; a barra de abas usa
+  // env(safe-area-inset-bottom) para não ficar sob o indicador de home.
+  viewportFit: "cover",
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{

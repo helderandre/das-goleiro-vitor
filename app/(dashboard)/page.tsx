@@ -21,6 +21,8 @@ import { RevenueChart } from "@/components/charts/revenue-chart"
 import { OrdersByStatus } from "@/components/charts/orders-by-status"
 import { TopProducts } from "@/components/charts/top-products"
 import { ConversionFunnel } from "@/components/charts/conversion-funnel"
+import { MobileOverview } from "@/components/mobile/mobile-overview"
+import { getMobileOverviewData } from "./mobile-overview-data"
 
 async function getOverviewData() {
   const supabase = await createClient()
@@ -88,7 +90,9 @@ async function getOverviewData() {
     // Product analytics for abandoned carts
     supabase
       .from("v_product_analytics")
-      .select("product_id, product_title, total_add_to_cart, total_checkout_started, total_checkout_completed, abandoned_carts")
+      .select(
+        "product_id, product_title, total_add_to_cart, total_checkout_started, total_checkout_completed, abandoned_carts"
+      )
       .gt("abandoned_carts", 0)
       .order("abandoned_carts", { ascending: false })
       .limit(5),
@@ -109,10 +113,12 @@ async function getOverviewData() {
     const s = o.status ?? "pending"
     statusCounts[s] = (statusCounts[s] ?? 0) + 1
   })
-  const ordersByStatus = Object.entries(statusCounts).map(([status, count]) => ({
-    status,
-    count,
-  }))
+  const ordersByStatus = Object.entries(statusCounts).map(
+    ([status, count]) => ({
+      status,
+      count,
+    })
+  )
 
   // Build revenue chart data
   const revenueData =
@@ -155,7 +161,7 @@ async function getOverviewData() {
 
   const totalAbandonedCarts = abandonedCartsData.reduce(
     (sum, p) => sum + p.abandoned,
-    0,
+    0
   )
 
   const conversionRate =
@@ -205,7 +211,10 @@ const leadTypeLabels: Record<string, string> = {
 }
 
 export default async function OverviewPage() {
-  const data = await getOverviewData()
+  const [data, mobileData] = await Promise.all([
+    getOverviewData(),
+    getMobileOverviewData(),
+  ])
 
   const cards = [
     {
@@ -268,172 +277,182 @@ export default async function OverviewPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Overview</h1>
-        <p className="text-muted-foreground">
-          Resumo geral do site Goleiro Vitor
-        </p>
+    <>
+      {/* Mobile tem layout próprio, com cara de app; troca só por CSS para não
+        piscar na hidratação. */}
+      <div className="md:hidden">
+        <MobileOverview data={mobileData} />
       </div>
+      <div className="hidden space-y-6 md:block">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Overview
+          </h1>
+          <p className="text-muted-foreground">
+            Resumo geral do site Goleiro Vitor
+          </p>
+        </div>
 
-      {/* Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {card.title}
-              </CardTitle>
-              <card.icon className="h-4 w-4 text-muted-foreground" />
+        {/* Metric Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((card) => (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {card.title}
+                </CardTitle>
+                <card.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{card.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {card.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Charts Row 1 */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <RevenueChart data={data.revenueData} />
+          <OrdersByStatus data={data.ordersByStatus} />
+        </div>
+
+        {/* Charts Row 2 */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <TopProducts data={data.topProductsData} />
+          <ConversionFunnel data={data.funnelData} />
+        </div>
+
+        {/* Abandoned Carts */}
+        {data.abandonedCartsData.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Carrinhos Abandonados por Produto</CardTitle>
+              <CardDescription>
+                Produtos com checkouts iniciados mas não finalizados
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {card.description}
-              </p>
+              <div className="space-y-3">
+                {data.abandonedCartsData.map((item) => (
+                  <div
+                    key={item.productId}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{item.productTitle}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.addToCart} adições · {item.checkoutStarted}{" "}
+                        checkouts · {item.checkoutCompleted} compras
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-destructive">
+                      <XCircle className="h-4 w-4" />
+                      <span className="text-sm font-semibold">
+                        {item.abandoned}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        )}
 
-      {/* Charts Row 1 */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RevenueChart data={data.revenueData} />
-        <OrdersByStatus data={data.ordersByStatus} />
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TopProducts data={data.topProductsData} />
-        <ConversionFunnel data={data.funnelData} />
-      </div>
-
-      {/* Abandoned Carts */}
-      {data.abandonedCartsData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Carrinhos Abandonados por Produto</CardTitle>
-            <CardDescription>
-              Produtos com checkouts iniciados mas não finalizados
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {data.abandonedCartsData.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{item.productTitle}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.addToCart} adições · {item.checkoutStarted} checkouts · {item.checkoutCompleted} compras
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-destructive">
-                    <XCircle className="h-4 w-4" />
-                    <span className="text-sm font-semibold">{item.abandoned}</span>
-                  </div>
+        {/* Recent Activity */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Recent Orders */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pedidos Recentes</CardTitle>
+              <CardDescription>Últimos 5 pedidos realizados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {data.recentOrders.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum pedido ainda.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {data.recentOrders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">
+                          #{order.short_id ?? order.id.slice(0, 8)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(order.created_at!).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {Number(order.total).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
+                        </p>
+                        <p
+                          className={`text-xs ${statusColors[order.status ?? "pending"]}`}
+                        >
+                          {statusLabels[order.status ?? "pending"]}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Recent Activity */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pedidos Recentes</CardTitle>
-            <CardDescription>Últimos 5 pedidos realizados</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.recentOrders.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nenhum pedido ainda.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {data.recentOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">
-                        #{order.short_id ?? order.id.slice(0, 8)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(order.created_at!).toLocaleDateString(
-                          "pt-BR",
-                        )}
-                      </p>
+          {/* Recent Leads */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Leads Recentes</CardTitle>
+              <CardDescription>Últimos 5 contatos recebidos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {data.recentLeads.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum lead ainda.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {data.recentLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{lead.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {lead.email}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium">
+                          {leadTypeLabels[lead.type ?? "contact"]}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(lead.created_at!).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {Number(order.total).toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })}
-                      </p>
-                      <p
-                        className={`text-xs ${statusColors[order.status ?? "pending"]}`}
-                      >
-                        {statusLabels[order.status ?? "pending"]}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Leads */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Leads Recentes</CardTitle>
-            <CardDescription>
-              Últimos 5 contatos recebidos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.recentLeads.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nenhum lead ainda.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {data.recentLeads.map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{lead.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead.email}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-medium">
-                        {leadTypeLabels[lead.type ?? "contact"]}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(lead.created_at!).toLocaleDateString(
-                          "pt-BR",
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
