@@ -30,6 +30,7 @@ import { OrderShippingActions } from "@/components/order-shipping-actions"
 import { OrderRefundDialog } from "@/components/order-refund-dialog"
 import { OrderMessages } from "@/components/order-messages"
 import { OrderEmails } from "@/components/order-emails"
+import { availableManualKinds } from "@/lib/order-email-kinds"
 
 interface ShippingAddress {
   street?: string
@@ -90,12 +91,13 @@ export default async function PedidoDetailPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("email_outbox")
-      .select("id, kind, status, delivery_status, recipient, attempts, last_error, created_at, sent_at, resent_from")
+      .select("id, kind, dedupe_key, status, delivery_status, recipient, attempts, last_error, created_at, sent_at, resent_from, requested_by")
       .eq("order_id", id)
       .order("created_at", { ascending: true }),
   ])
 
   const emailIds = (emails ?? []).map((e) => e.id)
+  const manualKinds = availableManualKinds(order, (emails ?? []).map((e) => e.dedupe_key))
   const { data: emailEvents } = emailIds.length
     ? await supabase
         .from("email_events")
@@ -349,6 +351,7 @@ export default async function PedidoDetailPage({
                 orderId={order.id}
                 emails={emails ?? []}
                 events={emailEvents ?? []}
+                availableKinds={manualKinds}
               />
             </CardContent>
           </Card>

@@ -98,8 +98,8 @@ Todos os e-mails do pedido SHALL estar em português do Brasil, seguir a identid
 - **THEN** ele lê as mesmas informações, incluindo links completos
 
 ### Requirement: Sem e-mails retroativos
-A ativação dos e-mails MUST NOT gerar envios para pedidos e mudanças de estado anteriores a ela. Apenas mudanças ocorridas depois da ativação disparam e-mails.
+A ativação dos e-mails MUST NOT gerar envios automáticos para pedidos e mudanças de estado anteriores a ela. Apenas mudanças ocorridas depois da ativação disparam e-mails automaticamente; o admin MAY enviar manualmente um e-mail de um pedido anterior (ver `notificacoes/envio-de-emails`, *Envio manual*).
 
 #### Scenario: Pedido já pago antes da ativação
 - **WHEN** os e-mails são ativados e existe um pedido que já estava pago
-- **THEN** o cliente desse pedido não recebe o e-mail de pedido criado nem o de pagamento recebido, mas recebe o de pedido enviado quando ele for postado
+- **THEN** o cliente desse pedido não recebe automaticamente o e-mail de pedido criado nem o de pagamento recebido, mas recebe o de pedido enviado quando ele for postado

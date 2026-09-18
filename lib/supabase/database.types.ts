@@ -1340,6 +1340,10 @@ export type Database = {
       }
       release_order_stock: { Args: { p_order_id: string }; Returns: undefined }
       requeue_order_email: { Args: { p_outbox_id: string }; Returns: string }
+      send_order_email_manually: {
+        Args: { p_kind: string; p_order_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

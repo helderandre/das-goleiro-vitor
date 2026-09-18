@@ -18,6 +18,7 @@
 - [x] 2.9 Criar a tabela `email_events` (e-mail da fila com `on delete cascade`, tipo, momento, detalhe, payload, `svix_id` único) e a coluna `delivery_status` em `email_outbox`, com RLS de leitura só para admin; verificar que um usuário comum não lê nenhum evento
 - [x] 2.10 Criar a RPC que registra um evento e atualiza `delivery_status` apenas quando o peso do novo evento for maior (tabela da decisão 8); verificar numa transação revertida que abertura antes de entrega mantém "aberto", que spam depois de aberto vira "spam" e que o mesmo `svix_id` duas vezes gera um único evento
 - [x] 2.11 Criar a RPC `requeue_order_email` que exige admin, recusa original ou reenvio pendente e insere a nova linha ligada à original; verificar numa transação revertida que um não-admin é recusado, que o segundo pedido seguido é recusado e que a nova linha dispara a chamada imediata
+- [x] 2.13 Criar a RPC `send_order_email_manually` que exige admin, confere o tipo contra o estado do pedido e insere com a mesma chave do trigger; verificar numa transação revertida que um tipo indisponível é recusado, que um tipo existente é recusado e que o evento posterior não gera um segundo e-mail
 - [x] 2.12 Versionar a migration em `supabase/migrations/` com a versão registrada em `schema_migrations`
 
 ## 3. Templates
@@ -51,6 +52,7 @@
 - [ ] 6.1 Adicionar ao detalhe do pedido o card "E-mails" com tipo, destinatário, situação de envio, selo de situação de entrega, data, motivo de falha, descarte ou rejeição, e reenvios agrupados sob o original; verificar num pedido com e-mails enviados, falhos, descartados e reenviados
 - [ ] 6.2 Adicionar a linha do tempo recolhível dos eventos de entrega de cada e-mail e verificar num e-mail com entrega e abertura
 - [ ] 6.3 Adicionar o botão "Reenviar" (oculto em e-mails pendentes ou em envio) com server action chamando `requeue_order_email`, confirmação quando a situação for entregue, aberto ou clicado, e aviso quando a RPC recusar; verificar os três casos
+- [ ] 6.5 Adicionar ao card o botão "Enviar e-mail" com os tipos disponíveis e ainda inexistentes, e a identificação "envio manual" no histórico; verificar num pedido pago sem e-mails que aparecem "Pedido criado" e "Pagamento recebido"
 - [ ] 6.4 Verificar o card a 375px de largura e rodar `tsc`, `eslint` nos arquivos tocados e `next build` sem erros novos
 
 ## 7. E-mails de conta (Supabase Auth)

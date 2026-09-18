@@ -166,7 +166,17 @@ A inserção dispara o mesmo trigger de chamada imediata da decisão 2, e a linh
 
 O reenvio é montado com os dados atuais do pedido e vai para o e-mail atual da conta. Ele não reaproveita o HTML do envio original — que nem é guardado (decisão 1).
 
-**Alternativa descartada:** voltar a linha original para `pending`. Perderia o histórico do primeiro envio e a situação de entrega dele, e o `Idempotency-Key` igual ao id da linha faria o Resend recusar o segundo envio.
+### 10. Envio manual
+
+Uma RPC `send_order_email_manually(order_id, kind)` com `SECURITY DEFINER` exige admin, confere se o tipo está disponível para o estado atual do pedido (tabela do spec *Envio manual*) e insere a linha **com a mesma chave de deduplicação que o trigger usaria** (`pago:<order_id>`, `aguardando:<order_id>:<mp_payment_id>`…) e `requested_by` preenchido. Usar a mesma chave faz o envio manual valer como o envio daquele evento: se o trigger disparar depois, o `on conflict do nothing` não cria outro. Já existindo a chave, a RPC recusa e o caminho é o reenvio.
+
+No histórico, envio manual é a linha com `requested_by` preenchido e sem `resent_from`; não precisa de coluna nova.
+
+O dashboard calcula os tipos disponíveis a partir do pedido e do histórico só para montar o menu. Quem decide é a RPC, então um menu desatualizado não consegue criar um envio inválido.
+
+**Alternativa descartada:** permitir o envio manual de qualquer tipo, em qualquer estado. Um "Pedido concluído" para um pedido não entregue, ou um Pix para um pedido já pago, confundem o cliente.
+
+**Alternativa descartada (reenvio):** voltar a linha original para `pending`. Perderia o histórico do primeiro envio e a situação de entrega dele, e o `Idempotency-Key` igual ao id da linha faria o Resend recusar o segundo envio.
 
 ## Risks / Trade-offs
 

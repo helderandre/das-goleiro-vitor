@@ -559,3 +559,20 @@ export async function resendOrderEmail(outboxId: string, orderId: string) {
   revalidatePath(`/pedidos/${orderId}`)
   return { success: true }
 }
+
+/**
+ * Envia manualmente um e-mail que ainda não existe para o pedido. A RPC
+ * confere que quem chama é admin e que o tipo se aplica ao estado do pedido.
+ */
+export async function sendOrderEmailManually(orderId: string, kind: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc("send_order_email_manually", {
+    p_order_id: orderId,
+    p_kind: kind,
+  })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/pedidos/${orderId}`)
+  return { success: true }
+}

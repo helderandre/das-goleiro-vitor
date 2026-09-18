@@ -17,6 +17,7 @@ A loja entrou em produção sem nenhuma comunicação com o cliente depois do ch
 - Nova Edge Function que monta e envia os e-mails pela API do Resend.
 - Histórico de e-mails no detalhe do pedido no dashboard, para o admin saber o que o cliente recebeu.
 - **Rastreio da entrega** pelo webhook do Resend: cada e-mail do pedido mostra se foi entregue, se atrasou, se foi rejeitado pelo servidor do cliente (bounce), marcado como spam, aberto ou clicado.
+- **Envio manual** pelo dashboard: o admin envia um e-mail que ainda não existe para o pedido, escolhendo entre os tipos que fazem sentido para o estado atual — por exemplo, "Pagamento recebido" para um pedido pago antes da ativação.
 - **Reenvio manual** pelo dashboard: o admin reenvia qualquer e-mail do pedido que não esteja em envio no momento, com confirmação quando ele já consta como entregue. O reenvio gera um novo registro e mantém o original no histórico.
 - Modo de teste que redireciona todos os e-mails para um endereço interno.
 

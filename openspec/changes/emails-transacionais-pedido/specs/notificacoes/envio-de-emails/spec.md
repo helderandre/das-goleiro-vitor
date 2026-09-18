@@ -16,7 +16,7 @@ Os e-mails SHALL ser disparados pela mudança de estado do pedido, qualquer que 
 - **THEN** o e-mail de pedido concluído é disparado
 
 ### Requirement: No máximo um envio por evento
-Cada e-mail SHALL ser enviado automaticamente no máximo uma vez por evento, mesmo que a mudança de estado seja reprocessada, que o webhook seja reenviado ou que o envio seja tentado mais de uma vez. Para "aguardando pagamento", o evento é cada pagamento pendente distinto; para os demais, o evento é a primeira vez que o pedido entra no estado correspondente. O reenvio manual pelo admin é a única forma de enviar o mesmo e-mail de novo.
+Cada e-mail SHALL ser enviado automaticamente no máximo uma vez por evento, mesmo que a mudança de estado seja reprocessada, que o webhook seja reenviado ou que o envio seja tentado mais de uma vez. Para "aguardando pagamento", o evento é cada pagamento pendente distinto; para os demais, o evento é a primeira vez que o pedido entra no estado correspondente. O reenvio manual pelo admin é a única forma de enviar o mesmo e-mail de novo. Um e-mail enviado manualmente conta como o envio daquele evento: se a mudança de estado correspondente acontecer depois, ela não gera outro.
 
 #### Scenario: Webhook reenviado
 - **WHEN** o Mercado Pago reenvia a mesma notificação de pagamento aprovado três vezes
@@ -123,6 +123,36 @@ As notificações de entrega SHALL ser aceitas somente com assinatura válida do
 #### Scenario: E-mail de redefinição de senha
 - **WHEN** chega a notificação de entrega de um e-mail de redefinição de senha
 - **THEN** ela é aceita e ignorada, sem erro
+
+### Requirement: Envio manual
+O admin SHALL poder enviar pelo histórico um e-mail do pedido de um tipo que ainda não existe para ele, escolhendo entre os tipos que fazem sentido para o estado atual do pedido:
+
+| tipo | disponível quando o pedido está |
+|---|---|
+| pedido criado | em qualquer estado, exceto cancelado |
+| aguardando pagamento | pendente, com Pix pendente dentro do prazo |
+| pagamento recebido | pago, enviado ou entregue |
+| pagamento cancelado | cancelado |
+| pedido enviado | enviado ou entregue, com código de rastreio |
+| pedido concluído | entregue |
+
+O dashboard MUST oferecer apenas os tipos disponíveis que ainda não existem no histórico; um tipo que já existe é reenviado pelo *Reenvio manual*. O envio SHALL passar pelas mesmas regras do envio automático — modo de teste, desligamento e descarte de e-mail obsoleto — e aparecer no histórico identificado como envio manual. O pedido MUST ser recusado quando o tipo não estiver disponível para o estado atual ou já existir. Somente administradores MAY enviar.
+
+#### Scenario: Pedido pago antes da ativação
+- **WHEN** o admin abre um pedido pago antes da ativação dos e-mails, sem nenhum e-mail no histórico
+- **THEN** o dashboard oferece "Pedido criado" e "Pagamento recebido", e ao escolher "Pagamento recebido" o cliente recebe esse e-mail
+
+#### Scenario: Tipo que não faz sentido
+- **WHEN** alguém tenta enviar pela API o e-mail de pedido concluído para um pedido apenas pago
+- **THEN** o pedido é recusado e nenhum e-mail é criado
+
+#### Scenario: Evento acontece depois do envio manual
+- **WHEN** o admin envia manualmente "Pedido criado" e o pedido é pago em seguida
+- **THEN** o cliente recebe o de pagamento recebido normalmente, e não recebe um segundo "Pedido criado"
+
+#### Scenario: Tipo já existente
+- **WHEN** o pedido já tem o e-mail de pagamento recebido no histórico
+- **THEN** o dashboard não o oferece no envio manual; o caminho é reenviá-lo
 
 ### Requirement: Reenvio manual
 O admin SHALL poder reenviar pelo histórico qualquer e-mail do pedido que não esteja pendente nem em envio. Quando o e-mail já constar como entregue, aberto ou clicado, o dashboard MUST pedir confirmação antes de reenviar. O reenvio SHALL criar um novo e-mail no histórico, ligado ao original, montado com os dados atuais do pedido e enviado ao e-mail atual da conta do cliente. O reenvio MUST passar pelas mesmas regras do envio automático: e-mail obsoleto é descartado, o modo de teste redireciona e o envio desligado descarta. Enquanto houver um reenvio pendente do mesmo e-mail, um novo pedido de reenvio MUST ser recusado. Somente administradores MAY reenviar.
