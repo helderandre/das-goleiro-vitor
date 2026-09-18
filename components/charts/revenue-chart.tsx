@@ -61,7 +61,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                   />
                 }
               />
-              <Area
+              <Area animationDuration={900} animationEasing="ease-out"
                 dataKey="revenue"
                 type="monotone"
                 fill="var(--chart-1)"

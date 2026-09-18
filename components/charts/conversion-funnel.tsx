@@ -57,7 +57,7 @@ export function ConversionFunnel({ data }: ConversionFunnelProps) {
               <XAxis dataKey="step" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis tickLine={false} axisLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" fill="var(--chart-4)" radius={[4, 4, 0, 0]} />
+              <Bar animationDuration={900} animationEasing="ease-out" dataKey="value" fill="var(--chart-4)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>
         )}

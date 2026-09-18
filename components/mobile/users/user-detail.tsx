@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { Check, ChevronLeft, ChevronRight, Loader2, Mail, MessageCircle, Phone, ShieldCheck, ShieldOff } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AnimatedNumber } from "@/components/motion"
 import { formatPhone, whatsappNumber } from "@/lib/phone"
 import { ORDER_STATUS_CHIP, ORDER_STATUS_LABELS } from "@/lib/order-status"
 import { updateUserRole } from "@/app/(dashboard)/usuarios/actions"
@@ -90,8 +91,8 @@ export function MobileUserDetail({ user: u, orders, addresses }: MobileUserDetai
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
-        <Stat label="Pedidos" value={String(orders.length)} />
-        <Stat label="Total gasto" value={formatBRL(u.spent)} />
+        <Stat label="Pedidos" value={<AnimatedNumber value={orders.length} />} />
+        <Stat label="Total gasto" value={<AnimatedNumber value={u.spent} format="brl" />} />
       </div>
 
       {orders.length > 0 && (
@@ -165,7 +166,7 @@ export function MobileUserDetail({ user: u, orders, addresses }: MobileUserDetai
   )
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5 rounded-[20px] border bg-card p-3.5">
       <span className="text-[13px] text-muted-foreground">{label}</span>

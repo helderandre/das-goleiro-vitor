@@ -66,7 +66,7 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
             />
           }
         />
-        <Pie
+        <Pie animationDuration={900} animationEasing="ease-out"
           data={filtered}
           dataKey="total"
           nameKey="method"

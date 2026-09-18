@@ -52,7 +52,7 @@ export function OrdersByStatus({ data }: OrdersByStatusProps) {
           <ChartContainer config={chartConfig} className="mx-auto h-[250px] w-full">
             <PieChart accessibilityLayer>
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-              <Pie
+              <Pie animationDuration={900} animationEasing="ease-out"
                 data={filtered}
                 dataKey="count"
                 nameKey="status"

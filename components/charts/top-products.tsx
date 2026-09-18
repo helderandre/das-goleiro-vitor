@@ -48,7 +48,7 @@ export function TopProducts({ data }: TopProductsProps) {
                 tickFormatter={(v) => (v.length > 18 ? v.slice(0, 18) + "..." : v)}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar
+              <Bar animationDuration={900} animationEasing="ease-out"
                 dataKey="additions"
                 fill="var(--chart-2)"
                 radius={[0, 4, 4, 0]}

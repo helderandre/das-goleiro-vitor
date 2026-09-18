@@ -7,6 +7,7 @@ import { CalendarDays, CreditCard, Landmark, Loader2, QrCode, RefreshCw, Truck, 
 import { cn } from "@/lib/utils"
 import { getWalletBalance } from "@/app/(dashboard)/pedidos/actions"
 import { formatBRL } from "../format"
+import { AnimatedNumber, useGrowIn } from "@/components/motion"
 import { PeriodSheet, describePeriod, type Period } from "../orders/period-sheet"
 import {
   TransactionRow,
@@ -82,7 +83,8 @@ export function MobileFinanceOverview({
   const net = gross - fees - shipping
   const pending = inRange.filter((t) => t.kind === "pendente")
   const lost = inRange.filter((t) => t.kind === "cancelado" || t.kind === "reembolso")
-  const pct = (v: number) => (gross > 0 ? (v / gross) * 100 : 0)
+  const grown = useGrowIn()
+  const pct = (v: number) => (grown && gross > 0 ? (v / gross) * 100 : 0)
 
   // Últimos 6 meses até o mês atual.
   const [ty, tm] = today.split("-").map(Number)
@@ -155,7 +157,7 @@ export function MobileFinanceOverview({
       <section aria-label="Receita líquida" className="flex flex-col gap-[18px] rounded-3xl border bg-card p-[22px]">
         <div className="flex flex-col gap-1.5">
           <span className="text-[13px] font-semibold tracking-wider text-muted-foreground uppercase">Receita líquida</span>
-          <span className="text-[44px] leading-none font-extrabold tracking-tighter">{formatBRL(net)}</span>
+          <span className="text-[44px] leading-none font-extrabold tracking-tighter"><AnimatedNumber value={net} format="brl" /></span>
           <span className="text-sm text-muted-foreground">
             {received.length === 0
               ? "Nenhum pedido pago no período"
@@ -165,9 +167,9 @@ export function MobileFinanceOverview({
         {gross > 0 && (
           <>
             <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-muted">
-              <div className="bg-primary" style={{ width: `${pct(net)}%` }} />
-              <div className="bg-muted-foreground/60" style={{ width: `${pct(shipping)}%` }} />
-              {fees > 0 && <div className="min-w-1 bg-destructive/80" style={{ width: `${pct(fees)}%` }} />}
+              <div className="bg-primary transition-[width] duration-700 ease-out" style={{ width: `${pct(net)}%` }} />
+              <div className="bg-muted-foreground/60 transition-[width] delay-100 duration-700 ease-out" style={{ width: `${pct(shipping)}%` }} />
+              {fees > 0 && <div className="min-w-1 bg-destructive/80 transition-[width] delay-200 duration-700 ease-out" style={{ width: `${pct(fees)}%` }} />}
             </div>
             <div className="flex flex-col gap-2.5 text-sm">
               <Legend color="bg-primary" label="Líquido" value={net} />
@@ -179,20 +181,20 @@ export function MobileFinanceOverview({
       </section>
 
       <section aria-label="Indicadores" className="grid grid-cols-2 gap-2.5">
-        <Kpi label="Pedidos pagos" value={String(received.length)} hint={`de ${inRange.length} ${inRange.length === 1 ? "pedido" : "pedidos"} no período`} />
+        <Kpi label="Pedidos pagos" value={<AnimatedNumber value={received.length} />} hint={`de ${inRange.length} ${inRange.length === 1 ? "pedido" : "pedidos"} no período`} />
         <Kpi
           label="Ticket médio"
-          value={received.length ? formatBRL(gross / received.length) : "—"}
+          value={received.length ? <AnimatedNumber value={gross / received.length} format="brl" /> : "—"}
           hint="valor bruto por pedido"
         />
         <Kpi
           label="A receber"
-          value={formatBRL(pending.reduce((s, t) => s + t.total, 0))}
+          value={<AnimatedNumber value={pending.reduce((s, t) => s + t.total, 0)} format="brl" />}
           hint={pending.length ? `${pending.length} ${pending.length === 1 ? "pedido pendente" : "pedidos pendentes"}` : "nenhum pedido pendente"}
         />
         <Kpi
           label="Cancelado"
-          value={formatBRL(lost.reduce((s, t) => s + t.total, 0))}
+          value={<AnimatedNumber value={lost.reduce((s, t) => s + t.total, 0)} format="brl" />}
           hint={lost.length ? `${lost.length} ${lost.length === 1 ? "pedido" : "pedidos"}` : "nada devolvido"}
         />
       </section>
@@ -223,7 +225,7 @@ export function MobileFinanceOverview({
             <span className="text-[13px] text-muted-foreground">
               {months[bar].full} · {mode === "bruto" ? "bruto" : "líquido"}
             </span>
-            <span className="text-lg font-extrabold">{formatBRL(values[bar])}</span>
+            <AnimatedNumber value={values[bar]} format="brl" duration={500} className="text-lg font-extrabold" />
           </div>
           <div className="grid h-[150px] grid-cols-6 items-end gap-2.5">
             {months.map((m, i) => (
@@ -237,10 +239,13 @@ export function MobileFinanceOverview({
               >
                 <span
                   className={cn(
-                    "w-full max-w-[34px] rounded-lg transition-[height]",
+                    "w-full max-w-[34px] rounded-lg transition-[height] duration-700 ease-out",
                     values[i] > 0 ? (bar === i ? "bg-primary" : "bg-primary/45") : "bg-muted",
                   )}
-                  style={{ height: values[i] > 0 ? Math.max(8, Math.round((values[i] / max) * 118)) : 4 }}
+                  style={{
+                    height: grown && values[i] > 0 ? Math.max(8, Math.round((values[i] / max) * 118)) : 4,
+                    transitionDelay: `${i * 60}ms`,
+                  }}
                 />
                 <span className={cn("text-xs", bar === i ? "font-bold" : "font-medium text-muted-foreground")}>
                   {m.short}
@@ -270,7 +275,7 @@ export function MobileFinanceOverview({
                   <span className="font-bold whitespace-nowrap">{formatBRL(m.total)}</span>
                 </span>
                 <span className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <span className="block h-full bg-primary" style={{ width: `${share}%` }} />
+                  <span className="block h-full bg-primary transition-[width] duration-700 ease-out" style={{ width: `${grown ? share : 0}%` }} />
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {m.count} {m.count === 1 ? "pedido" : "pedidos"} · {share}% da receita
@@ -354,12 +359,12 @@ function Legend({ color, label, value }: { color: string; label: string; value: 
     <div className="flex items-center gap-2.5">
       <span className={cn("size-2.5 shrink-0 rounded-[3px]", color)} />
       <span className="min-w-0 grow truncate text-foreground/85">{label}</span>
-      <span className="shrink-0 font-semibold whitespace-nowrap">{formatBRL(value)}</span>
+      <AnimatedNumber value={value} format="brl" className="shrink-0 font-semibold whitespace-nowrap" />
     </div>
   )
 }
 
-function Kpi({ label, value, hint }: { label: string; value: string; hint: string }) {
+function Kpi({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
   return (
     <div className="flex flex-col gap-1 rounded-[20px] border bg-card p-3.5">
       <span className="text-[13px] text-muted-foreground">{label}</span>

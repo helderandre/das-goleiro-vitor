@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AnimatedNumber } from "@/components/motion"
 import {
   deleteProduct,
   updateProductStock,
@@ -346,7 +347,7 @@ function StatTile({
     <div className="flex flex-col gap-2.5 rounded-[18px] border bg-card p-3.5">
       <Icon className="size-[18px] text-muted-foreground" strokeWidth={1.8} />
       <span className="flex flex-col">
-        <span className="text-2xl font-extrabold">{value}</span>
+        <AnimatedNumber value={value} className="text-2xl font-extrabold" />
         <span className="text-[13px] leading-tight text-muted-foreground">{label}</span>
       </span>
     </div>

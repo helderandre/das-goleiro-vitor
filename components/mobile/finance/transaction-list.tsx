@@ -5,7 +5,7 @@ import Link from "next/link"
 import { CalendarDays, ChevronLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { formatBRL } from "../format"
+import { AnimatedNumber } from "@/components/motion"
 import { ALL_TIME, PeriodSheet, describePeriod, type Period } from "../orders/period-sheet"
 import { TransactionRow, useTransactionSheet } from "./transaction-sheet"
 import type { FinanceTransaction } from "./types"
@@ -84,9 +84,9 @@ export function MobileTransactionList({
       )}
 
       <section aria-label="Resumo" className="grid grid-cols-3 divide-x rounded-[20px] border bg-card px-1 py-3.5">
-        <Stat value={formatBRL(gross)} label="entrou" />
-        <Stat value={formatBRL(costs)} label="taxa + frete" className="text-destructive" />
-        <Stat value={formatBRL(gross - costs)} label="líquido" className="text-primary" />
+        <Stat value={gross} label="entrou" />
+        <Stat value={costs} label="taxa + frete" className="text-destructive" />
+        <Stat value={gross - costs} label="líquido" className="text-primary" />
       </section>
 
       <div role="tablist" aria-label="Tipo" className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]">
@@ -133,10 +133,10 @@ export function MobileTransactionList({
   )
 }
 
-function Stat({ value, label, className }: { value: string; label: string; className?: string }) {
+function Stat({ value, label, className }: { value: number; label: string; className?: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-0.5 px-1">
-      <span className={cn("truncate text-[15px] font-extrabold", className)}>{value}</span>
+      <AnimatedNumber value={value} format="brl" className={cn("truncate text-[15px] font-extrabold", className)} />
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   )

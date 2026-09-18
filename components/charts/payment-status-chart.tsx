@@ -59,7 +59,7 @@ export function PaymentStatusChart({ data }: PaymentStatusChartProps) {
             />
           }
         />
-        <Pie
+        <Pie animationDuration={900} animationEasing="ease-out"
           data={filtered}
           dataKey="total"
           nameKey="status"

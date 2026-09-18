@@ -64,7 +64,7 @@ export function MonthlyRevenueChart({ data }: MonthlyRevenueChartProps) {
             />
           }
         />
-        <Bar
+        <Bar animationDuration={900} animationEasing="ease-out"
           dataKey="revenue"
           fill="var(--chart-1)"
           radius={[4, 4, 0, 0]}

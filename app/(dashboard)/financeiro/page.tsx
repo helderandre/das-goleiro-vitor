@@ -33,6 +33,7 @@ import { PaymentStatusChart } from "@/components/charts/payment-status-chart"
 import { PaymentMethodChart } from "@/components/charts/payment-method-chart"
 import Link from "next/link"
 import { getPaymentDisplay } from "@/lib/payment-methods"
+import { AnimatedNumber } from "@/components/motion"
 import { MobileFinanceOverview } from "@/components/mobile/finance/finance-overview"
 import { getFinanceTransactions } from "./mobile-finance-data"
 
@@ -265,35 +266,35 @@ export default async function FinanceiroPage() {
   const cards = [
     {
       title: "Receita Total",
-      value: formatBRL(data.totalRevenue),
+      value: <AnimatedNumber value={data.totalRevenue} format="brl" />,
       icon: DollarSign,
       description: `Valor bruto de ${data.paidOrdersCount} pedidos pagos`,
       color: "text-green-600",
     },
     {
       title: "Taxas MP",
-      value: formatBRL(data.totalFees),
+      value: <AnimatedNumber value={data.totalFees} format="brl" />,
       icon: XCircle,
       description: "Total retido pelo Mercado Pago",
       color: "text-red-600",
     },
     {
       title: "Frete",
-      value: formatBRL(data.totalShipping),
+      value: <AnimatedNumber value={data.totalShipping} format="brl" />,
       icon: Truck,
       description: "Pago pelo cliente e repassado ao Melhor Envio",
       color: "text-orange-600",
     },
     {
       title: "Receita Líquida",
-      value: formatBRL(data.totalNet),
+      value: <AnimatedNumber value={data.totalNet} format="brl" />,
       icon: CheckCircle2,
       description: "Receita total − taxas MP − frete",
       color: "text-emerald-600",
     },
     {
       title: "Receita do Mês",
-      value: formatBRL(data.thisMonthRevenue),
+      value: <AnimatedNumber value={data.thisMonthRevenue} format="brl" />,
       icon: isGrowthPositive ? TrendingUp : TrendingDown,
       description: (
         <span className={isGrowthPositive ? "text-green-600" : "text-red-600"}>
@@ -309,28 +310,28 @@ export default async function FinanceiroPage() {
     },
     {
       title: "Mês Anterior",
-      value: formatBRL(data.lastMonthRevenue),
+      value: <AnimatedNumber value={data.lastMonthRevenue} format="brl" />,
       icon: Wallet,
       description: "Receita confirmada",
       color: "text-slate-600",
     },
     {
       title: "Ticket Médio",
-      value: formatBRL(data.avgTicket),
+      value: <AnimatedNumber value={data.avgTicket} format="brl" />,
       icon: Receipt,
       description: `Base de ${data.paidOrdersCount} vendas`,
       color: "text-purple-600",
     },
     {
       title: "Pendente",
-      value: formatBRL(data.pendingRevenue),
+      value: <AnimatedNumber value={data.pendingRevenue} format="brl" />,
       icon: Clock,
       description: "Aguardando pagamento",
       color: "text-yellow-600",
     },
     {
       title: "Total de Pedidos",
-      value: data.totalOrders,
+      value: <AnimatedNumber value={data.totalOrders} />,
       icon: Receipt,
       description: "Todos os status",
       color: "text-slate-600",

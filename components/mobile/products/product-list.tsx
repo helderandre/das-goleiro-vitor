@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Plus, Search, Star, TabletSmartphone } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AnimatedNumber } from "@/components/motion"
 import { formatBRL } from "../format"
 import { finalPrice } from "./product-utils"
 
@@ -145,7 +146,7 @@ export function MobileProductList({ products }: { products: MobileProductItem[] 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="text-[22px] font-extrabold tracking-tight">{value}</span>
+      <AnimatedNumber value={value} className="text-[22px] font-extrabold tracking-tight" />
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   )

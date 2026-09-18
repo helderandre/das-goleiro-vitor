@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 import { UserAvatar, useMobileShell } from "./mobile-shell"
 import { OrderSheet, type MobileOrder } from "./order-sheet"
 import { formatBRL } from "./format"
+import { AnimatedNumber, useGrowIn } from "@/components/motion"
 
 export interface MobilePayment {
   total: number
@@ -126,7 +127,9 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
     setSheetOpen(true)
   }
 
-  const pct = (v: number) => (revenue.gross > 0 ? (v / revenue.gross) * 100 : 0)
+  const grown = useGrowIn()
+  // Barras saem de zero e crescem ao aparecer e ao trocar o período.
+  const pct = (v: number) => (grown && revenue.gross > 0 ? (v / revenue.gross) * 100 : 0)
   const conversionRate =
     data.conversion.carts > 0
       ? Math.round((data.conversion.purchasers / data.conversion.carts) * 100)
@@ -209,7 +212,7 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
             Receita líquida
           </span>
           <span className="text-[44px] leading-none font-extrabold tracking-tighter">
-            {formatBRL(revenue.net)}
+            <AnimatedNumber value={revenue.net} format="brl" />
           </span>
           <span className="text-sm text-muted-foreground">
             {revenue.count === 0
@@ -220,14 +223,14 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
         <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-muted">
           {revenue.gross > 0 && (
             <>
-              <div className="bg-primary" style={{ width: `${pct(revenue.net)}%` }} />
+              <div className="bg-primary transition-[width] duration-700 ease-out" style={{ width: `${pct(revenue.net)}%` }} />
               <div
-                className="bg-muted-foreground/60"
+                className="bg-muted-foreground/60 transition-[width] delay-100 duration-700 ease-out"
                 style={{ width: `${pct(revenue.shipping)}%` }}
               />
               {revenue.fee > 0 && (
                 <div
-                  className="min-w-1 bg-destructive/80"
+                  className="min-w-1 bg-destructive/80 transition-[width] delay-200 duration-700 ease-out"
                   style={{ width: `${pct(revenue.fee)}%` }}
                 />
               )}
@@ -310,14 +313,14 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
       <section aria-label="Resumo" className="flex flex-col gap-3">
         <h2 className="text-[19px] font-bold tracking-tight">Resumo</h2>
         <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-          <StatCard href="/produtos" icon={BookOpen} value={data.productsCount} label="livros no catálogo" />
-          <StatCard href="/agenda" icon={CalendarDays} value={data.upcomingEventsCount} label="eventos próximos" />
+          <StatCard href="/produtos" icon={BookOpen} value={<AnimatedNumber value={data.productsCount} />} label="livros no catálogo" />
+          <StatCard href="/agenda" icon={CalendarDays} value={<AnimatedNumber value={data.upcomingEventsCount} />} label="eventos próximos" />
           <StatCard
             icon={Filter}
-            value={`${conversionRate}%`}
+            value={<AnimatedNumber value={conversionRate} format="pct" />}
             label={`${data.conversion.purchasers} de ${data.conversion.carts} carrinhos`}
           />
-          <StatCard href="/usuarios" icon={Users} value={data.usersCount} label="usuários" />
+          <StatCard href="/usuarios" icon={Users} value={<AnimatedNumber value={data.usersCount} />} label="usuários" />
         </div>
       </section>
 
@@ -405,7 +408,7 @@ function LegendRow({ color, label, value }: { color: string; label: string; valu
     <div className="flex items-center gap-2.5">
       <span className={cn("size-2.5 shrink-0 rounded-[3px]", color)} />
       <span className="min-w-0 grow truncate text-foreground/85">{label}</span>
-      <span className="shrink-0 font-semibold whitespace-nowrap">{formatBRL(value)}</span>
+      <AnimatedNumber value={value} format="brl" className="shrink-0 font-semibold whitespace-nowrap" />
     </div>
   )
 }

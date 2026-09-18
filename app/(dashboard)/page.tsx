@@ -22,6 +22,7 @@ import { OrdersByStatus } from "@/components/charts/orders-by-status"
 import { TopProducts } from "@/components/charts/top-products"
 import { ConversionFunnel } from "@/components/charts/conversion-funnel"
 import { MobileOverview } from "@/components/mobile/mobile-overview"
+import { AnimatedNumber } from "@/components/motion"
 import { getMobileOverviewData } from "./mobile-overview-data"
 
 async function getOverviewData() {
@@ -219,58 +220,55 @@ export default async function OverviewPage() {
   const cards = [
     {
       title: "Receita Total",
-      value: data.totalRevenue.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }),
+      value: <AnimatedNumber value={data.totalRevenue} format="brl" />,
       icon: DollarSign,
       description: "Pedidos pagos/enviados/entregues",
     },
     {
       title: "Pedidos Pendentes",
-      value: data.pendingOrdersCount,
+      value: <AnimatedNumber value={data.pendingOrdersCount} />,
       icon: ShoppingCart,
       description: "Aguardando pagamento",
     },
     {
       title: "Produtos",
-      value: data.productsCount,
+      value: <AnimatedNumber value={data.productsCount} />,
       icon: Package,
       description: "Total cadastrados",
     },
     {
       title: "Posts no Blog",
-      value: data.blogPostsCount,
+      value: <AnimatedNumber value={data.blogPostsCount} />,
       icon: FileText,
       description: "Total publicados",
     },
     {
       title: "Eventos Próximos",
-      value: data.upcomingEventsCount,
+      value: <AnimatedNumber value={data.upcomingEventsCount} />,
       icon: CalendarDays,
       description: "A partir de hoje",
     },
     {
       title: "Leads Novos",
-      value: data.newLeadsCount,
+      value: <AnimatedNumber value={data.newLeadsCount} />,
       icon: MessageSquare,
       description: "Aguardando resposta",
     },
     {
       title: "Usuários",
-      value: data.usersCount,
+      value: <AnimatedNumber value={data.usersCount} />,
       icon: Users,
       description: "Total cadastrados",
     },
     {
       title: "Carrinhos Abandonados",
-      value: data.totalAbandonedCarts,
+      value: <AnimatedNumber value={data.totalAbandonedCarts} />,
       icon: XCircle,
       description: "Checkouts não finalizados",
     },
     {
       title: "Taxa de Conversão",
-      value: `${data.conversionRate}%`,
+      value: <AnimatedNumber value={Number(data.conversionRate)} format="pct" />,
       icon: TrendingUp,
       description: `${data.funnelData.uniquePurchasers} de ${data.funnelData.uniqueCarts} carrinhos`,
     },
