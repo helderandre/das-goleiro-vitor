@@ -1,7 +1,7 @@
 ## 1. Pré-requisitos (usuário)
 
-- [ ] 1.1 Criar uma API key no Resend com permissão de envio e confirmar que o domínio do remetente aparece como verificado (SPF e DKIM válidos) no painel do Resend
-- [ ] 1.2 Cadastrar nos secrets das Edge Functions `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` e `EMAIL_TEST_RECIPIENT` (endereço interno), e verificar com `supabase secrets list` que os quatro aparecem
+- [x] 1.1 Criar uma API key no Resend com permissão de envio e confirmar que o domínio do remetente aparece como verificado (SPF e DKIM válidos) no painel do Resend
+- [x] 1.2 Cadastrar nos secrets das Edge Functions `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` e `EMAIL_TEST_RECIPIENT` (endereço interno), e verificar com `supabase secrets list` que os quatro aparecem
 - [x] 1.3 Gerar um valor aleatório para `EMAIL_DISPATCH_SECRET`, cadastrá-lo como secret das functions e verificar que aparece em `supabase secrets list`
 - [ ] 1.4 No painel do Resend, cadastrar o webhook apontando para `.../functions/v1/resend-webhook` com os eventos `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened` e `email.clicked`, ligar *open* e *click tracking* no domínio e cadastrar o segredo de assinatura como `RESEND_WEBHOOK_SECRET`; verificar em `supabase secrets list`
 
