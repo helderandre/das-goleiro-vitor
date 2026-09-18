@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
   Check,
+  ExternalLink,
   FileText,
+  FileUp,
   Loader2,
   RefreshCw,
   Send,
   Tag,
+  Trash2,
   Truck,
   Undo2,
   XCircle,
@@ -23,6 +26,7 @@ import {
   markMessagesAsRead,
   quoteShipping,
   refundOrder,
+  removePaymentProof,
   resendOrderEmail,
   runLabelAction,
   sendOrderEmailManually,
@@ -30,9 +34,10 @@ import {
   setShippingService,
   updateOrderStatus,
   updateTrackingCode,
+  uploadPaymentProof,
 } from "@/app/(dashboard)/pedidos/actions"
 import type { OrderEmail } from "@/components/order-emails"
-import { OrderPaymentProof } from "@/components/order-payment-proof"
+import { compressImage } from "@/lib/compress-image"
 import {
   Drawer,
   DrawerContent,
@@ -944,13 +949,136 @@ export function TrackingSheet({ orderId, code, ...sheet }: SheetProps & { orderI
 }
 
 export function ProofSheet({ orderId, url, ...sheet }: SheetProps & { orderId: string; url: string | null }) {
+  const router = useRouter()
+  const fileInput = React.useRef<HTMLInputElement>(null)
+  const [running, setRunning] = React.useState<"upload" | "remove" | null>(null)
+  // O arquivo sobrescreve o mesmo caminho no Storage: a versão força o
+  // navegador a buscar a imagem nova em vez da que ficou em cache.
+  const [version, setVersion] = React.useState(0)
+  const isImage = !!url && /\.(jpe?g|png|webp|gif|heic)(\?|$)/i.test(url)
+  const preview = url && version ? `${url}?v=${version}` : url
+
+  async function upload(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.files?.[0]
+    e.target.value = ""
+    if (!raw) return
+    setRunning("upload")
+    try {
+      const file = raw.type.startsWith("image/") ? await compressImage(raw) : raw
+      const fd = new FormData()
+      fd.append("file", file)
+      const result = await uploadPaymentProof(orderId, fd)
+      if (result.error) return toast.error(result.error)
+      toast.success(url ? "Comprovante trocado" : "Comprovante enviado")
+      setVersion(Date.now())
+      router.refresh()
+    } finally {
+      setRunning(null)
+    }
+  }
+
+  async function remove() {
+    setRunning("remove")
+    const result = await removePaymentProof(orderId)
+    setRunning(null)
+    if (result.error) return toast.error(result.error)
+    toast.success("Comprovante removido")
+    router.refresh()
+  }
+
   return (
     <SheetShell {...sheet} title="Comprovante de pagamento" description="Foto ou PDF do pagamento do cliente">
-      <div className="rounded-2xl bg-muted/60 p-4">
-        <OrderPaymentProof orderId={orderId} currentUrl={url} />
-      </div>
+      <input ref={fileInput} type="file" accept="image/*,.pdf" onChange={upload} className="hidden" />
+
+      {!url ? (
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          disabled={!!running}
+          className="flex h-[200px] flex-col items-center justify-center gap-2.5 rounded-[22px] border-[1.5px] border-dashed border-primary/50 bg-primary/5"
+        >
+          <span className="flex size-14 items-center justify-center rounded-[18px] bg-primary/15 text-primary">
+            {running === "upload" ? (
+              <Loader2 className="size-6 animate-spin" />
+            ) : (
+              <FileUp className="size-[26px]" strokeWidth={1.8} />
+            )}
+          </span>
+          <span className="text-base font-bold">
+            {running === "upload" ? "Enviando…" : "Adicionar comprovante"}
+          </span>
+          <span className="text-[13px] text-muted-foreground">Câmera, galeria ou PDF</span>
+        </button>
+      ) : (
+        <>
+          <a
+            href={preview!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4"
+          >
+            {isImage ? (
+              // eslint-disable-next-line @next/next/no-img-element -- arquivo do Supabase Storage
+              <img
+                src={preview!}
+                alt="Comprovante de pagamento"
+                className="h-[118px] w-[84px] shrink-0 rounded-[10px] border bg-muted object-cover"
+              />
+            ) : (
+              <span className="flex h-[118px] w-[84px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-[10px] border bg-muted text-muted-foreground">
+                <FileText className="size-8" strokeWidth={1.6} />
+                <span className="text-[11px] font-bold">PDF</span>
+              </span>
+            )}
+            <span className="flex flex-col gap-1">
+              <span className="text-xl font-extrabold tracking-tight">Comprovante anexado</span>
+              <span className="text-sm text-muted-foreground">Toque para abrir</span>
+            </span>
+          </a>
+
+          <div className="flex flex-col divide-y overflow-hidden rounded-[20px] bg-muted/60">
+            <a
+              href={preview!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-16 items-center gap-3.5 px-3.5 py-2.5 active:bg-foreground/5"
+            >
+              <span className="flex size-11 items-center justify-center rounded-[14px] bg-primary/15 text-primary">
+                <ExternalLink className="size-5" strokeWidth={1.8} />
+              </span>
+              <span className="text-base font-semibold">Ver comprovante</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              disabled={!!running}
+              className="flex min-h-16 items-center gap-3.5 px-3.5 py-2.5 text-left active:bg-foreground/5"
+            >
+              <span className="flex size-11 items-center justify-center rounded-[14px] bg-primary/15 text-primary">
+                {running === "upload" ? <Loader2 className="size-5 animate-spin" /> : <FileUp className="size-5" strokeWidth={1.8} />}
+              </span>
+              <span className="flex flex-col gap-0.5">
+                <span className="text-base font-semibold">Trocar comprovante</span>
+                <span className="text-[13px] text-muted-foreground">O arquivo atual é substituído</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={remove}
+              disabled={!!running}
+              className="flex min-h-16 items-center gap-3.5 px-3.5 py-2.5 text-left text-destructive active:bg-foreground/5"
+            >
+              <span className="flex size-11 items-center justify-center rounded-[14px] bg-destructive/15">
+                {running === "remove" ? <Loader2 className="size-5 animate-spin" /> : <Trash2 className="size-5" strokeWidth={1.8} />}
+              </span>
+              <span className="text-base font-semibold">Remover comprovante</span>
+            </button>
+          </div>
+        </>
+      )}
+
       <button type="button" onClick={() => sheet.onOpenChange(false)} className={closeBtn}>
-        Fechar
+        {url ? "Fechar" : "Cancelar"}
       </button>
     </SheetShell>
   )
