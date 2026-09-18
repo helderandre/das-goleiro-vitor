@@ -26,6 +26,7 @@ import {
   ArrowDownRight,
   Wallet,
   Receipt,
+  Truck,
 } from "lucide-react"
 import { MonthlyRevenueChart } from "@/components/charts/monthly-revenue-chart"
 import { PaymentStatusChart } from "@/components/charts/payment-status-chart"
@@ -70,7 +71,7 @@ async function getFinancialData() {
     { data: lastMonthOrders },
     { data: recentTransactions },
   ] = await Promise.all([
-    supabase.from("orders").select("id, total, status, created_at, mp_payment_method, mp_payment_type, mp_net_amount, mp_fee_amount"),
+    supabase.from("orders").select("id, total, status, created_at, mp_payment_method, mp_payment_type, mp_fee_amount, shipping_price"),
     supabase
       .from("orders")
       .select("total, status, created_at")
@@ -177,13 +178,18 @@ async function getFinancialData() {
     ([method, total]) => ({ method, total, count: countByMethod[method] ?? 0 })
   )
 
-  // Total fees and net
-  const totalFees = allOrders
-    ?.filter((o) => paidStatuses.includes(o.status ?? ""))
-    .reduce((sum, o) => sum + Number(o.mp_fee_amount ?? 0), 0) ?? 0
-  const totalNet = allOrders
-    ?.filter((o) => paidStatuses.includes(o.status ?? ""))
-    .reduce((sum, o) => sum + Number(o.mp_net_amount ?? 0), 0) ?? 0
+  // Do valor pago, a taxa fica com o Mercado Pago e o frete é repassado ao
+  // Melhor Envio: nenhum dos dois é receita da loja.
+  const paid = allOrders?.filter((o) => paidStatuses.includes(o.status ?? "")) ?? []
+  const totalFees = paid.reduce((sum, o) => sum + Number(o.mp_fee_amount ?? 0), 0)
+  const totalShipping = paid.reduce((sum, o) => sum + Number(o.shipping_price ?? 0), 0)
+  // Calculado aqui, e não somando mp_net_amount: aquele valor só desconta a
+  // taxa e fica vazio em pedido pago por comprovante.
+  const totalNet = paid.reduce(
+    (sum, o) =>
+      sum + Number(o.total) - Number(o.mp_fee_amount ?? 0) - Number(o.shipping_price ?? 0),
+    0
+  )
 
   // Monthly revenue (last 12 months)
   const monthlyMap = new Map<string, number>()
@@ -244,6 +250,7 @@ async function getFinancialData() {
     monthlyRevenueData,
     transactions,
     totalFees,
+    totalShipping,
     totalNet,
   }
 }
@@ -258,8 +265,29 @@ export default async function FinanceiroPage() {
       title: "Receita Total",
       value: formatBRL(data.totalRevenue),
       icon: DollarSign,
-      description: `${data.paidOrdersCount} pedidos pagos`,
+      description: `Valor bruto de ${data.paidOrdersCount} pedidos pagos`,
       color: "text-green-600",
+    },
+    {
+      title: "Taxas MP",
+      value: formatBRL(data.totalFees),
+      icon: XCircle,
+      description: "Total retido pelo Mercado Pago",
+      color: "text-red-600",
+    },
+    {
+      title: "Frete",
+      value: formatBRL(data.totalShipping),
+      icon: Truck,
+      description: "Pago pelo cliente e repassado ao Melhor Envio",
+      color: "text-orange-600",
+    },
+    {
+      title: "Receita Líquida",
+      value: formatBRL(data.totalNet),
+      icon: CheckCircle2,
+      description: "Receita total − taxas MP − frete",
+      color: "text-emerald-600",
     },
     {
       title: "Receita do Mês",
@@ -278,6 +306,13 @@ export default async function FinanceiroPage() {
       color: "text-blue-600",
     },
     {
+      title: "Mês Anterior",
+      value: formatBRL(data.lastMonthRevenue),
+      icon: Wallet,
+      description: "Receita confirmada",
+      color: "text-slate-600",
+    },
+    {
       title: "Ticket Médio",
       value: formatBRL(data.avgTicket),
       icon: Receipt,
@@ -290,27 +325,6 @@ export default async function FinanceiroPage() {
       icon: Clock,
       description: "Aguardando pagamento",
       color: "text-yellow-600",
-    },
-    {
-      title: "Receita Líquida",
-      value: formatBRL(data.totalNet),
-      icon: CheckCircle2,
-      description: "Após taxas do Mercado Pago",
-      color: "text-emerald-600",
-    },
-    {
-      title: "Taxas MP",
-      value: formatBRL(data.totalFees),
-      icon: XCircle,
-      description: "Total retido pelo Mercado Pago",
-      color: "text-red-600",
-    },
-    {
-      title: "Mês Anterior",
-      value: formatBRL(data.lastMonthRevenue),
-      icon: Wallet,
-      description: "Receita confirmada",
-      color: "text-slate-600",
     },
     {
       title: "Total de Pedidos",
@@ -331,7 +345,7 @@ export default async function FinanceiroPage() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <Card key={card.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
