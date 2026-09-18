@@ -32,6 +32,8 @@ import { OrderMessages } from "@/components/order-messages"
 import { OrderEmails } from "@/components/order-emails"
 import { OrderCustomerActions } from "@/components/order-customer-actions"
 import { availableManualKinds } from "@/lib/order-email-kinds"
+import { MobileOrderDetail } from "@/components/mobile/orders/order-detail"
+import { dayKey, timeLabel } from "../mobile-orders-data"
 
 interface ShippingAddress {
   street?: string
@@ -138,8 +140,90 @@ export default async function PedidoDetailPage({
       ? new Date(new Date(order.created_at).getTime() + 12 * 60 * 60 * 1000)
       : null
 
+  // Capas dos livros para a lista de itens no mobile.
+  const productIds = (items ?? []).map((i) => i.product_id).filter(Boolean) as string[]
+  const { data: covers } = productIds.length
+    ? await supabase
+        .from("product_images")
+        .select("product_id, image_url, is_cover")
+        .in("product_id", productIds)
+        .order("created_at", { ascending: true })
+    : { data: [] }
+  const coverById = new Map<string, string>()
+  for (const img of covers ?? []) {
+    if (!img.product_id) continue
+    if (img.is_cover || !coverById.has(img.product_id)) coverById.set(img.product_id, img.image_url)
+  }
+
+  const now = new Date()
+  /** "hoje, 08:53" / "ontem, 08:53" / "15/09, 08:53" no fuso de São Paulo. */
+  const whenLabel = (iso: string | null, joiner = ", ") => {
+    if (!iso) return null
+    const date = new Date(iso)
+    const key = dayKey(date)
+    const day =
+      key === dayKey(now)
+        ? "hoje"
+        : key === dayKey(new Date(now.getTime() - 86_400_000))
+          ? "ontem"
+          : date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" })
+    return `${day}${joiner}${timeLabel(date)}`
+  }
+  const mobileAutoCancel =
+    autoCancelAt && autoCancelAt > now ? whenLabel(autoCancelAt.toISOString(), " às ") : null
+
+  const mobile = (
+    <MobileOrderDetail
+      order={{
+        id: order.id,
+        shortId: (order.short_id ?? order.id.slice(0, 6).toUpperCase()).replace(/^#/, ""),
+        status: order.status ?? "pending",
+        shippingStatus: order.shipping_status,
+        total,
+        subtotal,
+        shippingPrice,
+        fee: order.mp_fee_amount == null ? null : Number(order.mp_fee_amount),
+        createdLabel: whenLabel(order.created_at) ?? "",
+        paidLabel: whenLabel(order.mp_paid_at, " às "),
+        shippedLabel: whenLabel(order.shipped_at, " às "),
+        deliveredLabel: whenLabel(order.delivered_at, " às "),
+        autoCancelLabel: mobileAutoCancel,
+        needsAttention: order.needs_attention,
+        attentionReason: order.attention_reason,
+        serviceName,
+        serviceId: order.me_service_id,
+        cartId: order.me_cart_id,
+        labelUrl: order.label_url,
+        trackingCode: order.tracking_code,
+        trackingUrl: order.tracking_url,
+        paymentLabel: payment.displayLabel,
+        mpPaymentId: order.mp_payment_id,
+        mpPaymentStatus: order.mp_payment_status,
+        paymentProofUrl: order.payment_proof_url,
+        hasPhysical: hasPhysicalItems,
+      }}
+      customer={
+        profile ? { name: profile.full_name, email: profile.email, phone: profile.phone } : null
+      }
+      address={address}
+      items={(items ?? []).map((item) => ({
+        id: item.id,
+        title: item.product_title,
+        quantity: item.quantity,
+        subtotal: Number(item.unit_price) * item.quantity,
+        coverUrl: item.product_id ? (coverById.get(item.product_id) ?? null) : null,
+        isEbook: item.product_type === "ebook",
+      }))}
+      messages={messages ?? []}
+      emails={emails ?? []}
+      manualKinds={manualKinds}
+    />
+  )
+
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">{mobile}</div>
+    <div className="hidden space-y-6 md:block">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/pedidos">
@@ -483,5 +567,6 @@ export default async function PedidoDetailPage({
         </div>
       </div>
     </div>
+    </>
   )
 }

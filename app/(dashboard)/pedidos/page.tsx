@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button"
 import { AlertTriangle, Eye } from "lucide-react"
 import { OrderStatusBadge } from "@/components/order-status-badge"
 import { OrderFilters } from "./filters"
+import { MobileOrderList } from "@/components/mobile/orders/order-list"
+import { getMobileOrders } from "./mobile-orders-data"
 
 export default async function PedidosPage({
   searchParams,
@@ -37,7 +39,7 @@ export default async function PedidosPage({
     query = query.eq("status", status)
   }
 
-  const { data: orders } = await query
+  const [{ data: orders }, mobile] = await Promise.all([query, getMobileOrders()])
 
   // Get profiles for all user_ids
   const userIds = [...new Set(orders?.map((o) => o.user_id).filter(Boolean) as string[])]
@@ -61,7 +63,12 @@ export default async function PedidosPage({
   }
 
   return (
-    <div className="space-y-6">
+    <>
+    {/* Mobile filtra no aparelho (status, busca e período) sobre todos os pedidos. */}
+    <div className="md:hidden">
+      <MobileOrderList orders={mobile.orders} today={mobile.today} initialStatus={status} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Pedidos</h1>
         <p className="text-muted-foreground">
@@ -161,5 +168,6 @@ export default async function PedidosPage({
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

@@ -33,7 +33,7 @@ function normalize(text: string) {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
 }
 
 export function MobileProductList({ products }: { products: MobileProductItem[] }) {

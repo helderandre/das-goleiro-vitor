@@ -114,6 +114,9 @@ function MobileTabBar({
   moreActive: boolean
 }) {
   const pathname = usePathname()
+  // Telas internas (detalhe, formulário) têm a própria barra de ações, como
+  // num app: a barra de abas só aparece nas telas de primeiro nível.
+  const isNested = pathname.split("/").filter(Boolean).length > 1
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href)
 
@@ -123,6 +126,8 @@ function MobileTabBar({
   ]
   const tabsRight = [{ href: "/financeiro", label: "Financeiro", icon: BarChart3 }]
   const inMainTabs = [...tabs, ...tabsRight].some((t) => isActive(t.href))
+
+  if (isNested) return null
 
   return (
     <nav
