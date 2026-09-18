@@ -7,6 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { LeadsTable } from "./leads-table"
+import { MobileLeadList } from "@/components/mobile/leads/lead-list"
+import { toMobileLead } from "./mobile-leads-data"
 
 export default async function LeadsPage({
   searchParams,
@@ -30,13 +32,25 @@ export default async function LeadsPage({
 
   const { data: leads } = await query
 
+  // O mobile filtra no aparelho: recebe todos os leads.
+  const { data: allLeads } = await supabase
+    .from("leads")
+    .select("id, name, message, status, type, created_at, event_details")
+    .order("created_at", { ascending: false })
+  const now = new Date()
+  const mobileLeads = (allLeads ?? []).map((l) => toMobileLead(l, now))
+
   const { count: newCount } = await supabase
     .from("leads")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobileLeadList leads={mobileLeads} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Leads</h1>
         <p className="text-muted-foreground">
@@ -67,5 +81,6 @@ export default async function LeadsPage({
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }
