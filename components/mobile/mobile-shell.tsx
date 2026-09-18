@@ -18,6 +18,7 @@ import {
   LogOut,
   MapPin,
   MessageSquare,
+  Monitor,
   Moon,
   Package,
   PenLine,
@@ -25,6 +26,7 @@ import {
   ShoppingBag,
   Sun,
   Users,
+  WifiOff,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -58,6 +60,8 @@ interface MobileShellProps {
   /** Pedidos pagos esperando envio + pedidos que pedem atenção. */
   ordersBadge: number
   newLeadsCount: number
+  /** O site tem seção incompleta (ex.: vídeo sem link ou capa). */
+  siteAlert?: boolean
 }
 
 /**
@@ -70,6 +74,7 @@ export function MobileShell({
   user,
   ordersBadge,
   newLeadsCount,
+  siteAlert = false,
 }: MobileShellProps) {
   const [createOpen, setCreateOpen] = React.useState(false)
   const [moreOpen, setMoreOpen] = React.useState(false)
@@ -97,7 +102,9 @@ export function MobileShell({
         onOpenChange={setMoreOpen}
         user={user}
         newLeadsCount={newLeadsCount}
+        siteAlert={siteAlert}
       />
+      <OfflineBanner />
     </MobileShellContext.Provider>
   )
 }
@@ -382,14 +389,16 @@ function MoreSheet({
   onOpenChange,
   user,
   newLeadsCount,
+  siteAlert,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: { name: string; email: string; avatar_url?: string | null }
   newLeadsCount: number
+  siteAlert: boolean
 }) {
   const router = useRouter()
-  const { resolvedTheme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [signingOut, setSigningOut] = React.useState(false)
   const close = () => onOpenChange(false)
 
@@ -401,78 +410,111 @@ function MoreSheet({
     router.refresh()
   }
 
-  const isDark = resolvedTheme === "dark"
+  const badges: Record<string, string | null> = {
+    "/leads": newLeadsCount > 0 ? String(newLeadsCount) : null,
+    "/site": siteAlert ? "!" : null,
+  }
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground>
-      <DrawerContent className="px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-3.5 pt-4 pb-[18px]">
-          <UserAvatar
-            name={user.name}
-            avatarUrl={user.avatar_url}
-            className="size-12 text-base"
-          />
+      <DrawerContent className="gap-[18px] px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-3.5 pt-4">
+          <UserAvatar name={user.name} avatarUrl={user.avatar_url} className="size-[52px] text-base" />
           <div className="flex min-w-0 flex-col">
-            <DrawerTitle className="truncate text-lg font-bold">
-              {user.name}
-            </DrawerTitle>
-            <DrawerDescription className="truncate text-[13px]">
-              {user.email}
-            </DrawerDescription>
+            <DrawerTitle className="truncate text-lg font-extrabold">{user.name}</DrawerTitle>
+            <DrawerDescription className="truncate text-[13px]">Admin · {user.email}</DrawerDescription>
           </div>
         </div>
 
-        <div className="-mx-5 overflow-y-auto px-5">
-          <div className="grid grid-cols-4 gap-y-4 pb-5">
+        <div data-vaul-no-drag className="-mx-5 flex min-h-0 flex-col gap-[18px] overflow-y-auto overscroll-contain px-5">
+          <div className="grid grid-cols-4 gap-y-[18px]">
             {moreItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={close}
-                className="relative flex flex-col items-center gap-2 text-xs font-medium"
+                className="relative flex flex-col items-center gap-2 text-xs font-semibold"
               >
                 <span className="flex size-[60px] items-center justify-center rounded-[20px] border bg-muted/60 text-primary">
                   <item.icon className="size-6" strokeWidth={1.8} />
                 </span>
                 {item.label}
-                {item.href === "/leads" && newLeadsCount > 0 && (
-                  <span className="absolute -top-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
-                    {newLeadsCount}
+                {badges[item.href] && (
+                  <span className="absolute -top-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-extrabold text-primary-foreground">
+                    {badges[item.href]}
                   </span>
                 )}
               </Link>
             ))}
           </div>
 
-          <SheetGroup>
-            <button
-              type="button"
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="flex min-h-14 items-center gap-3.5 px-3.5 text-left text-base font-medium active:bg-foreground/5"
-            >
-              {isDark ? (
-                <Sun className="size-5 text-muted-foreground" />
-              ) : (
-                <Moon className="size-5 text-muted-foreground" />
-              )}
-              {isDark ? "Tema claro" : "Tema escuro"}
-            </button>
-            <button
-              type="button"
-              onClick={signOut}
-              disabled={signingOut}
-              className="flex min-h-14 items-center gap-3.5 px-3.5 text-left text-base font-medium text-destructive active:bg-foreground/5 disabled:opacity-60"
-            >
-              {signingOut ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <LogOut className="size-5" />
-              )}
-              Sair
-            </button>
-          </SheetGroup>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Tema</span>
+            <div role="radiogroup" aria-label="Tema" className="grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  { value: "light", label: "Claro", icon: Sun },
+                  { value: "dark", label: "Escuro", icon: Moon },
+                  { value: "system", label: "Automático", icon: Monitor },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={theme === t.value}
+                  onClick={() => setTheme(t.value)}
+                  className={cn(
+                    "flex h-[42px] items-center justify-center gap-1.5 rounded-[13px] border-[1.5px] text-sm",
+                    theme === t.value ? "border-primary bg-primary/10 font-bold" : "border-transparent bg-muted/60 font-medium text-foreground/80",
+                  )}
+                >
+                  <t.icon className="size-4" strokeWidth={1.8} />
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={signOut}
+          disabled={signingOut}
+          className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border bg-muted/60 text-base font-semibold text-destructive disabled:opacity-60"
+        >
+          {signingOut ? <Loader2 className="size-[18px] animate-spin" /> : <LogOut className="size-[18px]" />}
+          Sair da conta
+        </button>
       </DrawerContent>
     </Drawer>
+  )
+}
+
+/** Faixa no topo quando o aparelho perde a conexão; o que já carregou fica. */
+function subscribeOnline(cb: () => void) {
+  window.addEventListener("online", cb)
+  window.addEventListener("offline", cb)
+  return () => {
+    window.removeEventListener("online", cb)
+    window.removeEventListener("offline", cb)
+  }
+}
+
+function OfflineBanner() {
+  const online = React.useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true,
+  )
+  if (online) return null
+  return (
+    <div
+      role="status"
+      className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 bg-destructive px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 text-[13px] font-semibold text-white"
+    >
+      <WifiOff className="size-4" />
+      Sem conexão · mostrando o que já carregou
+    </div>
   )
 }

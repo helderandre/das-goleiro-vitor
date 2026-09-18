@@ -66,7 +66,16 @@ export async function updateSiteSettings(id: string, formData: FormData) {
   }
 
   // Handle video thumbnail upload
-  const videoThumbnail = formData.get("video_thumbnail") as File
+  const videoThumbnail = formData.get("video_thumbnail") as File | null
+  // Sem arquivo, o mobile pode mandar a capa do próprio YouTube (só esse host).
+  const thumbnailUrl = formData.get("video_thumbnail_url")
+  if (
+    (!videoThumbnail || videoThumbnail.size === 0) &&
+    typeof thumbnailUrl === "string" &&
+    /^https:\/\/i\.ytimg\.com\/vi\/[\w-]+\/\w+\.jpg$/.test(thumbnailUrl)
+  ) {
+    await supabase.from("site_settings").update({ video_thumbnail_url: thumbnailUrl }).eq("id", id)
+  }
   if (videoThumbnail && videoThumbnail.size > 0) {
     const ext = videoThumbnail.name.split(".").pop()
     const path = `site/video-thumbnail.${ext}`

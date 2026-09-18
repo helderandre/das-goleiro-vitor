@@ -18,53 +18,7 @@ import {
 import { Loader2, User, Video, Heart, ImagePlus, Plus, Trash2 } from "lucide-react"
 import { updateSiteSettings } from "@/app/(dashboard)/site/actions"
 import type { Tables } from "@/lib/supabase/database.types"
-
-const PLATFORM_OPTIONS = [
-  { value: "instagram", label: "Instagram", prefix: "https://instagram.com/", placeholder: "goleirovitor" },
-  { value: "youtube", label: "YouTube", prefix: "https://youtube.com/@", placeholder: "goleirovitor" },
-  { value: "facebook", label: "Facebook", prefix: "https://facebook.com/", placeholder: "goleirovitor" },
-  { value: "tiktok", label: "TikTok", prefix: "https://tiktok.com/@", placeholder: "goleirovitor" },
-  { value: "twitter", label: "X (Twitter)", prefix: "https://x.com/", placeholder: "goleirovitor" },
-  { value: "linkedin", label: "LinkedIn", prefix: "https://linkedin.com/in/", placeholder: "goleirovitor" },
-  { value: "whatsapp", label: "WhatsApp", prefix: "https://wa.me/", placeholder: "5511999999999" },
-  { value: "telegram", label: "Telegram", prefix: "https://t.me/", placeholder: "goleirovitor" },
-  { value: "spotify", label: "Spotify", prefix: "https://open.spotify.com/artist/", placeholder: "id-do-artista" },
-  { value: "threads", label: "Threads", prefix: "https://threads.net/@", placeholder: "goleirovitor" },
-  { value: "pinterest", label: "Pinterest", prefix: "https://pinterest.com/", placeholder: "goleirovitor" },
-  { value: "website", label: "Site / Link", prefix: "", placeholder: "https://meusite.com" },
-] as const
-
-function getPlatformConfig(platform: string) {
-  return PLATFORM_OPTIONS.find((o) => o.value === platform) ?? PLATFORM_OPTIONS[PLATFORM_OPTIONS.length - 1]
-}
-
-/** Remove the base URL prefix to get just the handle/value part */
-function extractHandle(platform: string, fullUrl: string): string {
-  const config = getPlatformConfig(platform)
-  if (!config.prefix || !fullUrl) return fullUrl
-  if (fullUrl.startsWith(config.prefix)) return fullUrl.slice(config.prefix.length)
-  // Try without protocol variations
-  const withoutProtocol = fullUrl.replace(/^https?:\/\//, "")
-  const prefixWithoutProtocol = config.prefix.replace(/^https?:\/\//, "")
-  if (withoutProtocol.startsWith(prefixWithoutProtocol)) return withoutProtocol.slice(prefixWithoutProtocol.length)
-  return fullUrl
-}
-
-/** Build full URL from handle and platform */
-function buildFullUrl(platform: string, handle: string): string {
-  if (!handle) return ""
-  const config = getPlatformConfig(platform)
-  if (!config.prefix) return handle // website: user types full URL
-  // If user pasted a full URL, keep it as-is
-  if (handle.startsWith("http://") || handle.startsWith("https://")) return handle
-  return `${config.prefix}${handle}`
-}
-
-interface SocialLink {
-  platform: string
-  url: string
-  label: string
-}
+import { PLATFORM_OPTIONS, buildFullUrl, extractHandle, getPlatformConfig, type SocialLink } from "@/lib/site"
 
 interface SiteSettingsFormProps {
   settings: Tables<"site_settings">

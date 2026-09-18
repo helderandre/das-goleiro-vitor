@@ -22,7 +22,7 @@ export default async function DashboardLayout({
     .eq("id", user!.id)
     .single()
 
-  const [{ count: newLeadsCount }, { count: ordersBadge }] = await Promise.all([
+  const [{ count: newLeadsCount }, { count: ordersBadge }, { data: site }] = await Promise.all([
     supabase
       .from("leads")
       .select("*", { count: "exact", head: true })
@@ -32,7 +32,14 @@ export default async function DashboardLayout({
       .from("orders")
       .select("*", { count: "exact", head: true })
       .or("status.eq.paid,needs_attention.eq.true"),
+    // Selo "!" no Site do Mais: seção do vídeo incompleta.
+    supabase
+      .from("site_settings")
+      .select("video_youtube_url, video_thumbnail_url, video_title")
+      .limit(1)
+      .maybeSingle(),
   ])
+  const siteAlert = !!site && (!site.video_youtube_url || !site.video_thumbnail_url || !site.video_title)
 
   const userInfo = {
     name: profile?.full_name ?? "Admin",
@@ -45,6 +52,7 @@ export default async function DashboardLayout({
       user={userInfo}
       ordersBadge={ordersBadge ?? 0}
       newLeadsCount={newLeadsCount ?? 0}
+      siteAlert={siteAlert}
     >
       {/* Alvo do shouldScaleBackground do Vaul: encolhe por trás das sheets.
           A barra de abas fica fora para não perder o position: fixed. */}
