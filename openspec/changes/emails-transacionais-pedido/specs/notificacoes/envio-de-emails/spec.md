@@ -66,7 +66,7 @@ Os e-mails SHALL sair de um remetente com o nome da loja em um domínio verifica
 - **THEN** a resposta chega à caixa de entrada da loja
 
 ### Requirement: Modo de teste
-O envio SHALL ter um modo de teste em que todos os e-mails vão para um endereço interno configurado, com o assunto marcado como teste e indicando o destinatário original. No modo de teste, nenhum e-mail MUST chegar a clientes.
+O envio SHALL ter um modo de teste em que todos os e-mails vão para um endereço interno configurado, com o assunto marcado como teste e indicando o destinatário original. No modo de teste, nenhum e-mail MUST chegar a clientes. O histórico SHALL continuar mostrando o cliente como destinatário e indicar que o e-mail foi entregue ao endereço interno.
 
 #### Scenario: Teste em produção
 - **WHEN** o modo de teste está ativo e um cliente real paga um pedido

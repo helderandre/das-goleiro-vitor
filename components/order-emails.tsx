@@ -38,6 +38,7 @@ export interface OrderEmail {
   sent_at: string | null
   resent_from: string | null
   requested_by: string | null
+  test_redirect_to: string | null
 }
 
 export interface OrderEmailEvent {
@@ -267,6 +268,11 @@ function EmailRow({
         {email.recipient ?? "—"} ·{" "}
         {formatDateTime(email.sent_at ?? email.created_at)}
       </p>
+      {email.test_redirect_to && (
+        <p className="mt-0.5 text-xs break-all text-amber-600 dark:text-amber-500">
+          Modo de teste: entregue a {email.test_redirect_to}, não ao cliente
+        </p>
+      )}
 
       {reason && <p className="mt-1 text-xs text-muted-foreground">{reason}</p>}
       {retrying && (

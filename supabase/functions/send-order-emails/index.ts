@@ -37,7 +37,7 @@ interface OutboxRow {
 }
 
 type Outcome =
-  | { status: "sent"; providerId: string; recipient: string; subject: string }
+  | { status: "sent"; providerId: string; recipient: string; redirectedTo: string | null; subject: string }
   | { status: "skipped"; reason: string }
   | { status: "failed"; reason: string; permanent: boolean };
 
@@ -138,7 +138,9 @@ async function processRow(sb: SupabaseClient, row: OutboxRow, enabled: boolean):
     });
 
     const body = await res.json().catch(() => ({}));
-    if (res.ok && body?.id) return { status: "sent", providerId: body.id, recipient: to, subject };
+    if (res.ok && body?.id) {
+      return { status: "sent", providerId: body.id, recipient, redirectedTo: testRecipient || null, subject };
+    }
 
     const reason = `Resend ${res.status}: ${body?.message ?? body?.name ?? "erro desconhecido"}`;
     // 400/422 são erros de validação (endereço inválido, payload): repetir não resolve.
@@ -159,6 +161,7 @@ async function persist(sb: SupabaseClient, row: OutboxRow, outcome: Outcome): Pr
       status: "sent",
       provider_id: outcome.providerId,
       recipient: outcome.recipient,
+      test_redirect_to: outcome.redirectedTo,
       subject: outcome.subject,
       sent_at: now.toISOString(),
       delivery_status: "sent",
@@ -272,6 +275,7 @@ async function buildData(sb: SupabaseClient, row: OutboxRow, ctx: OrderContext):
     total: Number(order.total),
     address,
     hasPhysical,
+    isPaid: ["paid", "shipped", "delivered"].includes(order.status),
     expiresAt: new Date(new Date(order.created_at).getTime() + ORDER_TTL_MS),
     paymentLabel: paymentLabel(order.mp_payment_method, order.mp_payment_type),
   };

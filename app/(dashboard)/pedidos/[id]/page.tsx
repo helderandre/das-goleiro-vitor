@@ -91,7 +91,7 @@ export default async function PedidoDetailPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("email_outbox")
-      .select("id, kind, dedupe_key, status, delivery_status, recipient, attempts, last_error, created_at, sent_at, resent_from, requested_by")
+      .select("id, kind, dedupe_key, status, delivery_status, recipient, attempts, last_error, created_at, sent_at, resent_from, requested_by, test_redirect_to")
       .eq("order_id", id)
       .order("created_at", { ascending: true }),
   ])

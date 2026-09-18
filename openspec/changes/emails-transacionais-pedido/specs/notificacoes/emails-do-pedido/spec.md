@@ -22,6 +22,10 @@ Quando um pedido é criado, o cliente SHALL receber um e-mail confirmando o pedi
 - **WHEN** o cliente fecha um pedido com um livro físico e frete SEDEX
 - **THEN** recebe um e-mail com o livro, o subtotal, a linha de frete "SEDEX", o total, o endereço e o horário limite para pagar
 
+#### Scenario: Enviado depois do pagamento
+- **WHEN** o e-mail de pedido criado é enviado com o pedido já pago, por envio manual
+- **THEN** ele informa que o pagamento já foi recebido e não mostra prazo de pagamento nem aviso de cancelamento
+
 #### Scenario: Prazo exibido no fuso da loja
 - **WHEN** um pedido é criado às 11:53 no horário de Brasília
 - **THEN** o e-mail informa que o pagamento deve ser feito até as 23:53 do mesmo dia, horário de Brasília

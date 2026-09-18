@@ -28,6 +28,11 @@ export interface OrderEmailData {
   total: number;
   address: EmailAddress | null;
   hasPhysical: boolean;
+  /**
+   * Pedido já pago. O "pedido criado" enviado manualmente depois do pagamento
+   * não pode pedir para o cliente pagar.
+   */
+  isPaid: boolean;
   /** Prazo de pagamento: criação + 12h. */
   expiresAt: Date;
   paymentLabel: string | null;
@@ -85,19 +90,33 @@ function table(d: OrderEmailData, withAddress = true): string {
 function pedidoCriado(d: OrderEmailData): RenderedEmail {
   const prazo = dateTimeBR(d.expiresAt);
   const subject = `Recebemos seu pedido ${d.shortId}`;
-  const preheader = `${d.customerName ? `Obrigado, ${d.customerName}! ` : "Obrigado! "}Seu pedido está reservado por 12 horas enquanto aguardamos o pagamento.`;
+  const thanks = d.customerName ? `Obrigado, ${d.customerName}! ` : "Obrigado! ";
+  const preheader = d.isPaid
+    ? `${thanks}Seu pedido está confirmado e o pagamento já foi recebido.`
+    : `${thanks}Seu pedido está reservado por 12 horas enquanto aguardamos o pagamento.`;
+
+  const lead = d.isPaid
+    ? `Seu pedido está confirmado e o pagamento já foi recebido.${d.hasPhysical ? " Agora vamos preparar o envio dos seus livros." : ""}`
+    : d.hasPhysical
+    ? "Os livros já estão reservados para você. Assim que o pagamento for confirmado, começamos a preparar o envio."
+    : "Seu pedido já está registrado. Assim que o pagamento for confirmado, avisamos você.";
+
+  const deadline = d.isPaid
+    ? ""
+    : box(p(`${strong(`Pague até ${prazo}.`)} Depois disso o pedido é cancelado automaticamente${d.hasPhysical ? " e os livros voltam para o estoque" : ""}.`, 0));
+
   const body = eyebrow(`Pedido ${esc(d.shortId)}`)
     + h1(`${greet(d, "Recebemos seu pedido")}!`)
-    + p(d.hasPhysical
-      ? "Os livros já estão reservados para você. Assim que o pagamento for confirmado, começamos a preparar o envio."
-      : "Seu pedido já está registrado. Assim que o pagamento for confirmado, avisamos você.")
-    + progress(1, 1) + table(d)
-    + box(p(`${strong(`Pague até ${prazo}.`)} Depois disso o pedido é cancelado automaticamente${d.hasPhysical ? " e os livros voltam para o estoque" : ""}.`, 0))
+    + p(lead)
+    + (d.isPaid ? progress(2, 2) : progress(1, 1)) + table(d)
+    + deadline
     + button("Ver meu pedido", d.orderUrl);
   const text = textEmail([
     `${d.customerName ? `${d.customerName}, r` : "R"}ecebemos seu pedido ${d.shortId}!`, "",
     ...textSummary(d), "",
-    `Pague até ${prazo}. Depois disso o pedido é cancelado automaticamente.`,
+    d.isPaid
+      ? "Seu pedido está confirmado e o pagamento já foi recebido."
+      : `Pague até ${prazo}. Depois disso o pedido é cancelado automaticamente.`,
     `Ver meu pedido: ${d.orderUrl}`,
   ], d);
   return { subject, preheader, html: page({ subject, preheader, body, footerNote: footerNote(d) }), text };

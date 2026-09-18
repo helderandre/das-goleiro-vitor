@@ -337,6 +337,7 @@ export type Database = {
           sent_at: string | null
           status: string
           subject: string | null
+          test_redirect_to: string | null
           updated_at: string
         }
         Insert: {
@@ -358,6 +359,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           subject?: string | null
+          test_redirect_to?: string | null
           updated_at?: string
         }
         Update: {
@@ -379,6 +381,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           subject?: string | null
+          test_redirect_to?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1282,6 +1285,7 @@ export type Database = {
           sent_at: string | null
           status: string
           subject: string | null
+          test_redirect_to: string | null
           updated_at: string
         }[]
         SetofOptions: {
