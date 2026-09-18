@@ -28,6 +28,12 @@ const categoryColors: Record<string, string> = {
   Viagens: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
 }
 
+import { MobilePostList } from "@/components/mobile/blog/post-list"
+
+const TZ = "America/Sao_Paulo"
+const shortDate = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: TZ, day: "numeric", month: "short" }).replace(".", "") : ""
+
 export default async function BlogPage() {
   const supabase = await createClient()
 
@@ -36,8 +42,25 @@ export default async function BlogPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
+  const mobilePosts = (posts ?? []).map((p) => {
+    const published = p.status === "published"
+    const category = p.categories?.[0]
+    return {
+      id: p.id,
+      title: p.title,
+      excerpt: p.excerpt,
+      coverUrl: p.cover_url,
+      published,
+      meta: [category, published ? shortDate(p.published_at) : `criado ${shortDate(p.created_at)}`].filter(Boolean).join(" · "),
+    }
+  })
+
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobilePostList posts={mobilePosts} />
+    </div>
+    <div className="hidden md:block space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Blog</h1>
@@ -146,5 +169,6 @@ export default async function BlogPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

@@ -34,8 +34,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { DEFAULT_CATEGORIES } from "@/lib/blog"
 
-const DEFAULT_CATEGORIES = ["Esporte", "Fé", "Social", "Viagens"]
 
 interface BlogImage {
   id: string

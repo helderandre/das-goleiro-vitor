@@ -15,10 +15,26 @@ import { EditorToolbar } from "./editor-toolbar"
 import { ButtonBlockView } from "./node-views/button-block-view"
 import { VideoBlockView } from "./node-views/video-block-view"
 import { ImageGalleryView } from "./node-views/image-gallery-view"
+import { EditorUi } from "./extensions/editor-ui"
+import { ProductCard } from "./extensions/product-card"
+import {
+  MobileButtonBlockView,
+  MobileGalleryBlockView,
+  MobileVideoBlockView,
+  ProductCardView,
+} from "./mobile/block-views"
+import { MobileEditorToolbar } from "./mobile/mobile-toolbar"
+import {
+  BookLinkChooser,
+  insertBookLink,
+  matchBookLink,
+  useStoreBooks,
+  type StoreBook,
+} from "./book-link"
 import { createClient } from "@/lib/supabase/client"
 import { compressImage } from "@/lib/compress-image"
 import { toast } from "sonner"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import "./tiptap-editor.css"
 
 export interface ExistingImage {
@@ -31,10 +47,27 @@ interface TipTapEditorProps {
   postId: string
   onChange?: (html: string) => void
   existingImages?: ExistingImage[]
+  /** mobile: barra presa acima do teclado e blocos editados em sheets. */
+  variant?: "desktop" | "mobile"
 }
 
-export function TipTapEditor({ content, postId, onChange, existingImages = [] }: TipTapEditorProps) {
+export function TipTapEditor({
+  content,
+  postId,
+  onChange,
+  existingImages = [],
+  variant = "desktop",
+}: TipTapEditorProps) {
   const supabase = createClient()
+  const mobile = variant === "mobile"
+
+  // Link de livro colado: guarda até a pessoa escolher Cartão, Link ou Botão.
+  const books = useStoreBooks()
+  const booksRef = useRef<StoreBook[]>([])
+  useEffect(() => {
+    booksRef.current = books
+  }, [books])
+  const [pendingBook, setPendingBook] = useState<{ url: string; book: StoreBook } | null>(null)
 
   const uploadImage = useCallback(
     async (file: File): Promise<string | null> => {
@@ -94,24 +127,37 @@ export function TipTapEditor({ content, postId, onChange, existingImages = [] }:
       Highlight.configure({ multicolor: false }),
       ButtonBlock.extend({
         addNodeView() {
-          return ReactNodeViewRenderer(ButtonBlockView)
+          return ReactNodeViewRenderer(mobile ? MobileButtonBlockView : ButtonBlockView)
         },
       }),
       VideoBlock.extend({
         addNodeView() {
-          return ReactNodeViewRenderer(VideoBlockView)
+          return ReactNodeViewRenderer(mobile ? MobileVideoBlockView : VideoBlockView)
         },
       }),
       ImageGallery.extend({
         addNodeView() {
-          return ReactNodeViewRenderer(ImageGalleryView)
+          return ReactNodeViewRenderer(mobile ? MobileGalleryBlockView : ImageGalleryView)
         },
       }),
+      ProductCard.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(ProductCardView)
+        },
+      }),
+      EditorUi.configure({ mobile }),
     ],
     content: content ?? "",
     editorProps: {
       attributes: {
-        class: "tiptap-content",
+        class: mobile ? "tiptap-content tiptap-mobile" : "tiptap-content",
+      },
+      handlePaste: (_view, event) => {
+        const text = event.clipboardData?.getData("text/plain") ?? ""
+        const match = matchBookLink(text, booksRef.current)
+        if (!match) return false
+        setPendingBook(match)
+        return true
       },
     },
     onUpdate: ({ editor }) => {
@@ -177,6 +223,37 @@ export function TipTapEditor({ content, postId, onChange, existingImages = [] }:
 
   if (!editor) return null
 
+  const chooser = pendingBook && (
+    <BookLinkChooser
+      book={pendingBook.book}
+      floating={mobile}
+      onPick={(mode) => {
+        insertBookLink(editor, mode, pendingBook.url, pendingBook.book)
+        setPendingBook(null)
+      }}
+      onDismiss={() => {
+        insertBookLink(editor, "link", pendingBook.url, pendingBook.book)
+        setPendingBook(null)
+      }}
+    />
+  )
+
+  if (mobile) {
+    return (
+      <div>
+        <EditorContent editor={editor} />
+        {chooser}
+        <MobileEditorToolbar
+          editor={editor}
+          onImage={handleImageUpload}
+          onGallery={handleGalleryInsert}
+          onVideo={handleVideoInsert}
+          onButton={handleButtonInsert}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <EditorToolbar
@@ -186,6 +263,7 @@ export function TipTapEditor({ content, postId, onChange, existingImages = [] }:
         onVideoInsert={handleVideoInsert}
         onButtonInsert={handleButtonInsert}
       />
+      {chooser && <div className="border-b p-3">{chooser}</div>}
       <EditorContent editor={editor} />
     </div>
   )

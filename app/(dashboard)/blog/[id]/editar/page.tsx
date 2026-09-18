@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { BlogPostEditor } from "./blog-post-editor"
+import { MobilePostEditor } from "@/components/mobile/blog/post-editor-mobile"
+import { EditorSwitch } from "@/components/mobile/blog/editor-switch"
 
 export default async function EditarPostPage({
   params,
@@ -24,19 +26,25 @@ export default async function EditarPostPage({
     .eq("post_id", id)
     .order("created_at", { ascending: false })
 
+  const imageList =
+    images?.map((img) => ({
+      id: img.id,
+      image_url: img.image_url,
+      file_name: img.file_name,
+      file_size: img.file_size,
+      is_used: img.is_used,
+      created_at: img.created_at,
+    })) ?? []
+
   return (
-    <BlogPostEditor
-      post={post}
-      images={
-        images?.map((img) => ({
-          id: img.id,
-          image_url: img.image_url,
-          file_name: img.file_name,
-          file_size: img.file_size,
-          is_used: img.is_used,
-          created_at: img.created_at,
-        })) ?? []
+    <EditorSwitch
+      mobile={
+        <MobilePostEditor
+          post={post}
+          existingImages={imageList.map((img) => ({ url: img.image_url, name: img.file_name ?? "imagem" }))}
+        />
       }
+      desktop={<BlogPostEditor post={post} images={imageList} />}
     />
   )
 }

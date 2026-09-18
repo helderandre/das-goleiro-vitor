@@ -180,3 +180,14 @@
   border: 1px solid hsl(var(--border));
   color: hsl(var(--foreground));
 }
+
+/* Mobile: texto de leitura, sem moldura, com espaço para a barra fixa */
+.tiptap-content.tiptap-mobile {
+  min-height: 50svh;
+  padding: 0 0 12rem 0;
+  font-size: 17px;
+}
+
+.tiptap-content.tiptap-mobile p {
+  line-height: 1.65;
+}
