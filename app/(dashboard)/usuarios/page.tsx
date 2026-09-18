@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { UsersTable } from "./users-table"
+import { MobileUserList } from "@/components/mobile/users/user-list"
 
 export default async function UsuariosPage({
   searchParams,
@@ -66,6 +67,31 @@ export default async function UsuariosPage({
     )
   }
 
+  // Mobile filtra no aparelho: recebe todos, com gasto só de pedidos pagos.
+  const { data: allProfiles } = await supabase.from("profiles").select("id, full_name, email, phone, avatar_url, role")
+  const { data: paidOrders } = await supabase
+    .from("orders")
+    .select("user_id, total")
+    .in("status", ["paid", "shipped", "delivered"])
+  const spent = new Map<string, number>()
+  paidOrders?.forEach((o) => o.user_id && spent.set(o.user_id, (spent.get(o.user_id) ?? 0) + Number(o.total)))
+  const mobileUsers = (allProfiles ?? [])
+    .map((p) => {
+      const name = p.full_name?.trim() || "Sem nome"
+      return {
+        id: p.id,
+        name,
+        email: p.email,
+        phone: p.phone,
+        initials: name.split(/\s+/).slice(0, 2).map((w) => w[0]!.toUpperCase()).join(""),
+        avatarUrl: p.avatar_url,
+        admin: p.role === "admin",
+        orders: userStats.get(p.id)?.count ?? 0,
+        spent: spent.get(p.id) ?? 0,
+      }
+    })
+    .sort((a, b) => b.spent - a.spent || Number(b.admin) - Number(a.admin) || a.name.localeCompare(b.name))
+
   const usersWithStats = filtered.map((p) => ({
     ...p,
     orderCount: userStats.get(p.id)?.count ?? 0,
@@ -74,7 +100,11 @@ export default async function UsuariosPage({
   }))
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobileUserList users={mobileUsers} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Usuários</h1>
         <p className="text-muted-foreground">
@@ -98,5 +128,6 @@ export default async function UsuariosPage({
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }
