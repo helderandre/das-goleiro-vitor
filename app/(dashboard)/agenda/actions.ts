@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
+/** Destino depois de salvar: o mobile volta para o detalhe; nunca sai da Agenda. */
+function safeRedirect(formData: FormData) {
+  const to = formData.get("redirect_to")
+  return typeof to === "string" && /^\/agenda(\/[\w-]+)?$/.test(to) ? to : "/agenda"
+}
+
 export async function createEvent(formData: FormData) {
   const supabase = await createClient()
 
@@ -63,7 +69,7 @@ export async function createEvent(formData: FormData) {
   }
 
   revalidatePath("/agenda")
-  redirect("/agenda")
+  redirect(safeRedirect(formData))
 }
 
 export async function updateEvent(id: string, formData: FormData) {
@@ -123,7 +129,7 @@ export async function updateEvent(id: string, formData: FormData) {
   }
 
   revalidatePath("/agenda")
-  redirect("/agenda")
+  redirect(safeRedirect(formData))
 }
 
 export async function deleteEvent(id: string) {
@@ -148,5 +154,15 @@ export async function deleteEvent(id: string) {
   if (error) return { error: error.message }
 
   revalidatePath("/agenda")
+  return { success: true }
+}
+
+/** Troca rápida de status pelo detalhe do evento no mobile. */
+export async function updateEventStatus(id: string, status: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from("events").update({ status }).eq("id", id)
+  if (error) return { error: error.message }
+  revalidatePath("/agenda")
+  revalidatePath(`/agenda/${id}`)
   return { success: true }
 }

@@ -76,6 +76,12 @@ export function EventForm({ event }: EventFormProps) {
     if (coverFile) {
       formData.set("cover", coverFile)
     }
+    // datetime-local vem sem fuso ("2026-09-24T16:30"); sem converter, o banco
+    // lê como UTC e o evento recua 3 horas a cada vez que é salvo.
+    for (const key of ["start_date", "end_date"]) {
+      const value = formData.get(key) as string | null
+      if (value) formData.set(key, new Date(value).toISOString())
+    }
 
     startTransition(async () => {
       const result = isEditing

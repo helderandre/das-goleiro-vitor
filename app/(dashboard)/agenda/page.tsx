@@ -19,6 +19,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Plus, Pencil, MapPin, Globe } from "lucide-react"
 import { DeleteEventButton } from "./delete-button"
+import { MobileAgendaList } from "@/components/mobile/agenda/agenda-list"
+import { toMobileEvent } from "./mobile-agenda-data"
 
 const typeLabels: Record<string, string> = {
   palestra: "Palestra",
@@ -53,8 +55,15 @@ export default async function AgendaPage() {
   const upcoming = events?.filter((e) => e.start_date >= now) ?? []
   const past = events?.filter((e) => e.start_date < now) ?? []
 
+  const nowDate = new Date()
+  const mobileEvents = (events ?? []).map((e) => toMobileEvent(e, nowDate))
+
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobileAgendaList events={mobileEvents} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Agenda</h1>
@@ -109,6 +118,7 @@ export default async function AgendaPage() {
         </Card>
       )}
     </div>
+    </>
   )
 }
 
