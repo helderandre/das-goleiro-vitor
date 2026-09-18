@@ -154,6 +154,22 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
     : { data: [] }
   const customerById = new Map((customers ?? []).map((c) => [c.id, c]))
 
+  // Capa de cada livro; sem capa marcada, vale a primeira imagem.
+  const productIds = (products ?? []).map((p) => p.id)
+  const { data: images } = productIds.length
+    ? await supabase
+        .from("product_images")
+        .select("product_id, image_url, is_cover")
+        .in("product_id", productIds)
+        .order("created_at", { ascending: true })
+    : { data: [] }
+  const coverById = new Map<string, string>()
+  for (const img of images ?? []) {
+    if (!img.product_id) continue
+    if (img.is_cover || !coverById.has(img.product_id))
+      coverById.set(img.product_id, img.image_url)
+  }
+
   const payments: MobilePayment[] = (paidOrders ?? []).map((o) => {
     const at = new Date(o.mp_paid_at ?? o.created_at ?? now)
     return {
@@ -304,6 +320,7 @@ export async function getMobileOverviewData(): Promise<MobileOverviewData> {
       id: p.id,
       title: p.title,
       badge: productBadge(p.title),
+      coverUrl: coverById.get(p.id) ?? null,
       price: Number(p.price),
       discount: Number(p.discount_percent ?? 0),
       stock: p.stock,

@@ -74,6 +74,7 @@ export interface MobileOverviewData {
     id: string
     title: string
     badge: string
+    coverUrl: string | null
     price: number
     discount: number
     stock: number | null
@@ -352,9 +353,19 @@ export function MobileOverview({ data }: { data: MobileOverviewData }) {
                 href={`/produtos/${p.id}`}
                 className="flex items-center gap-3.5 p-3.5 active:bg-foreground/5"
               >
-                <span className="flex h-[54px] w-10 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/10 text-xs font-bold text-primary">
-                  {p.badge}
-                </span>
+                {p.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- mesmo padrão da lista de produtos
+                  <img
+                    src={p.coverUrl}
+                    alt=""
+                    loading="lazy"
+                    className="h-[54px] w-10 shrink-0 rounded-md bg-muted object-cover shadow-sm ring-1 ring-foreground/10"
+                  />
+                ) : (
+                  <span className="flex h-[54px] w-10 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/10 text-xs font-bold text-primary">
+                    {p.badge}
+                  </span>
+                )}
                 <span className="flex min-w-0 grow flex-col gap-0.5">
                   <span className="truncate text-[15px] font-semibold">{p.title}</span>
                   <span className="truncate text-[13px] text-muted-foreground">
