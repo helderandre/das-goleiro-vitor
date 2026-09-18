@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { DeleteProductButton } from "./delete-button"
+import { MobileProductList } from "@/components/mobile/products/product-list"
 
 export default async function ProdutosPage() {
   const supabase = await createClient()
@@ -59,6 +60,17 @@ export default async function ProdutosPage() {
     }
   })
 
+  // Unidades vendidas por produto (pedidos pagos, enviados ou entregues).
+  const { data: soldItems } = await supabase
+    .from("order_items")
+    .select("product_id, quantity, orders!inner(status)")
+    .in("orders.status", ["paid", "shipped", "delivered"])
+  const soldMap = new Map<string, number>()
+  soldItems?.forEach((item) => {
+    if (item.product_id)
+      soldMap.set(item.product_id, (soldMap.get(item.product_id) ?? 0) + item.quantity)
+  })
+
   const coverMap = new Map<string, string>()
   images?.forEach((img) => {
     if (img.is_cover && img.product_id) {
@@ -66,8 +78,34 @@ export default async function ProdutosPage() {
     }
   })
 
+  // Sem capa marcada, a primeira foto vale como capa.
+  images?.forEach((img) => {
+    if (img.product_id && !coverMap.has(img.product_id)) {
+      coverMap.set(img.product_id, img.image_url)
+    }
+  })
+
+  const mobileProducts = [...(products ?? [])]
+    .sort((a, b) => Number(b.is_main ?? false) - Number(a.is_main ?? false))
+    .map((product) => ({
+      id: product.id,
+      title: product.title,
+      coverUrl: coverMap.get(product.id) ?? null,
+      price: Number(product.price),
+      discount: Number(product.discount_percent ?? 0),
+      stock: product.stock,
+      isMain: product.is_main ?? false,
+      isEbook: product.product_type === "ebook",
+      sold: soldMap.get(product.id) ?? 0,
+      inCart: analyticsMap.get(product.id)?.addToCart ?? 0,
+    }))
+
   return (
-    <div className="space-y-6">
+    <>
+    <div className="md:hidden">
+      <MobileProductList products={mobileProducts} />
+    </div>
+    <div className="hidden space-y-6 md:block">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Produtos</h1>
@@ -216,5 +254,6 @@ export default async function ProdutosPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ProductForm } from "@/components/product-form"
+import { MobileProductForm } from "@/components/mobile/products/product-form-mobile"
 
 export default async function EditarProdutoPage({
   params,
@@ -46,17 +47,45 @@ export default async function EditarProdutoPage({
       }
     : undefined
 
+  const imageList =
+    images?.map((img) => ({
+      id: img.id,
+      image_url: img.image_url,
+      is_cover: img.is_cover ?? false,
+    })) ?? []
+
+  // numeric do Postgres chega como string ("0.3").
+  const toNumber = (value: number | string | null) =>
+    value == null ? null : Number(value)
+
   return (
-    <ProductForm
-      product={product}
-      existingImages={
-        images?.map((img) => ({
-          id: img.id,
-          image_url: img.image_url,
-          is_cover: img.is_cover ?? false,
-        })) ?? []
-      }
-      analytics={analytics}
-    />
+    <>
+      <div className="md:hidden">
+        <MobileProductForm
+          product={{
+            id: product.id,
+            title: product.title,
+            description: product.description,
+            price: Number(product.price),
+            productType: product.product_type,
+            stock: product.stock,
+            discount: Number(product.discount_percent ?? 0),
+            isMain: product.is_main ?? false,
+            weight: toNumber(product.weight),
+            height: toNumber(product.height),
+            width: toNumber(product.width),
+            length: toNumber(product.length),
+          }}
+          images={imageList.map((img) => ({
+            id: img.id,
+            url: img.image_url,
+            isCover: img.is_cover,
+          }))}
+        />
+      </div>
+      <div className="hidden md:block">
+        <ProductForm product={product} existingImages={imageList} analytics={analytics} />
+      </div>
+    </>
   )
 }

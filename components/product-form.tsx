@@ -211,6 +211,9 @@ export function ProductForm({ product, existingImages = [], analytics }: Product
                 />
               </div>
               <div className="flex items-center gap-2">
+                {/* Checkbox desmarcado não entra no FormData; isto avisa a
+                    action que o campo existe e deve ser salvo como false. */}
+                <input type="hidden" name="has_is_main" value="1" />
                 <input
                   id="is_main"
                   name="is_main"

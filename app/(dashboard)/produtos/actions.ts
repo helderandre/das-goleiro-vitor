@@ -1,7 +1,6 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
 function slugify(text: string) {
@@ -15,29 +14,70 @@ function slugify(text: string) {
     .trim()
 }
 
+/** Aceita "39,90" e "39.90". Vazio ou inválido → null. */
+function parseDecimal(value: FormDataEntryValue | null): number | null {
+  if (value === null) return null
+  const n = parseFloat(String(value).trim().replace(",", "."))
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * Campos do produto presentes no FormData. Campo ausente fica de fora, assim
+ * um formulário que não tem peso/medidas (o do desktop) não zera esses dados.
+ */
+function productFields(formData: FormData) {
+  const fields: {
+    title?: string
+    slug?: string
+    description?: string
+    price?: number
+    product_type?: string
+    stock?: number
+    discount_percent?: number
+    is_main?: boolean
+    weight?: number | null
+    height?: number | null
+    width?: number | null
+    length?: number | null
+  } = {}
+
+  if (formData.has("title")) {
+    const title = (formData.get("title") as string).trim()
+    fields.title = title
+    fields.slug = slugify(title)
+  }
+  if (formData.has("description"))
+    fields.description = formData.get("description") as string
+  if (formData.has("price")) fields.price = parseDecimal(formData.get("price")) ?? 0
+  if (formData.has("product_type"))
+    fields.product_type = formData.get("product_type") as string
+  if (formData.has("stock"))
+    fields.stock = parseInt(formData.get("stock") as string) || 0
+  if (formData.has("discount_percent"))
+    fields.discount_percent = parseInt(formData.get("discount_percent") as string) || 0
+  // Checkbox desmarcado não vai no FormData: o form diz que tem o campo.
+  if (formData.has("is_main") || formData.has("has_is_main"))
+    fields.is_main = formData.get("is_main") === "on"
+  for (const key of ["weight", "height", "width", "length"] as const) {
+    if (formData.has(key)) fields[key] = parseDecimal(formData.get(key))
+  }
+  return fields
+}
+
 export async function createProduct(formData: FormData) {
   const supabase = await createClient()
 
-  const title = formData.get("title") as string
-  const description = formData.get("description") as string
-  const price = parseFloat(formData.get("price") as string)
-  const productType = formData.get("product_type") as string
-  const stock = parseInt(formData.get("stock") as string) || 0
-  const discountPercent = parseInt(formData.get("discount_percent") as string) || 0
-  const isMain = formData.get("is_main") === "on"
-  const slug = slugify(title)
+  const fields = productFields(formData)
+  if (!fields.title) return { error: "Informe o título do produto." }
 
   const { data, error } = await supabase
     .from("products")
     .insert({
-      title,
-      slug,
-      description,
-      price,
-      product_type: productType,
-      stock,
-      discount_percent: discountPercent,
-      is_main: isMain,
+      ...fields,
+      title: fields.title,
+      slug: fields.slug!,
+      price: fields.price ?? 0,
+      is_main: fields.is_main ?? false,
     })
     .select("id")
     .single()
@@ -46,33 +86,16 @@ export async function createProduct(formData: FormData) {
     return { error: error.message }
   }
 
+  revalidatePath("/produtos")
   return { success: true, productId: data.id }
 }
 
 export async function updateProduct(id: string, formData: FormData) {
   const supabase = await createClient()
 
-  const title = formData.get("title") as string
-  const description = formData.get("description") as string
-  const price = parseFloat(formData.get("price") as string)
-  const productType = formData.get("product_type") as string
-  const stock = parseInt(formData.get("stock") as string) || 0
-  const discountPercent = parseInt(formData.get("discount_percent") as string) || 0
-  const isMain = formData.get("is_main") === "on"
-  const slug = slugify(title)
-
   const { error } = await supabase
     .from("products")
-    .update({
-      title,
-      slug,
-      description,
-      price,
-      product_type: productType,
-      stock,
-      discount_percent: discountPercent,
-      is_main: isMain,
-    })
+    .update(productFields(formData))
     .eq("id", id)
 
   if (error) {
@@ -80,6 +103,22 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   revalidatePath("/produtos")
+  revalidatePath(`/produtos/${id}`)
+  return { success: true }
+}
+
+export async function updateProductStock(id: string, stock: number) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from("products")
+    .update({ stock: Math.max(0, Math.round(stock)) })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/produtos")
+  revalidatePath(`/produtos/${id}`)
   return { success: true }
 }
 
