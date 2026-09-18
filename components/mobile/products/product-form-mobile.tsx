@@ -22,7 +22,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer"
 import { formatBRL } from "../format"
-import { decimalInput, finalPrice } from "./product-utils"
+import { decimalInput, finalPrice, maskMoney, moneyInput, parseMoney } from "./product-utils"
 
 interface SavedImage {
   id: string
@@ -69,7 +69,7 @@ export function MobileProductForm({ product, images = [] }: MobileProductFormPro
 
   const [title, setTitle] = React.useState(product?.title ?? "")
   const [description, setDescription] = React.useState(product?.description ?? "")
-  const [price, setPrice] = React.useState(product ? decimalInput(product.price) : "")
+  const [price, setPrice] = React.useState(product ? moneyInput(product.price) : "")
   const [type, setType] = React.useState(product?.productType === "ebook" ? "ebook" : "physical")
   const [discount, setDiscount] = React.useState(product?.discount ?? 0)
   const [stock, setStock] = React.useState(product?.stock ?? 0)
@@ -104,7 +104,7 @@ export function MobileProductForm({ product, images = [] }: MobileProductFormPro
         .map((img) => ({ kind: "saved", key: img.id, url: img.url, isCover: img.isCover, image: img }))
     : pending.map((img, i) => ({ kind: "pending", key: img.key, url: img.url, isCover: i === 0, image: img }))
 
-  const priceValue = parseFloat(price.replace(",", "."))
+  const priceValue = parseMoney(price)
   const valid = title.trim().length > 0 && Number.isFinite(priceValue) && priceValue > 0
   const discounts = DISCOUNTS.includes(discount)
     ? DISCOUNTS
@@ -180,7 +180,7 @@ export function MobileProductForm({ product, images = [] }: MobileProductFormPro
     const fd = new FormData()
     fd.set("title", title.trim())
     fd.set("description", description)
-    fd.set("price", price)
+    fd.set("price", String(priceValue))
     fd.set("product_type", type)
     fd.set("stock", String(stock))
     fd.set("discount_percent", String(discount))
@@ -390,9 +390,9 @@ export function MobileProductForm({ product, images = [] }: MobileProductFormPro
                 type="text"
                 inputMode="decimal"
                 value={price}
-                onChange={(e) => setPrice(e.target.value.replace(/[^\d,.]/g, ""))}
+                onChange={(e) => setPrice(maskMoney(e.target.value))}
                 placeholder="0,00"
-                className="w-24 bg-transparent text-right text-[17px] font-bold outline-none placeholder:text-muted-foreground/70"
+                className="w-28 bg-transparent text-right text-[17px] font-bold outline-none placeholder:text-muted-foreground/70"
               />
             </label>
 
