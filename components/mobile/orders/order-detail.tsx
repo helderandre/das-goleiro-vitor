@@ -36,7 +36,7 @@ import {
   createPixPayment,
 } from "@/app/(dashboard)/pedidos/actions"
 import { EMAIL_KIND_LABELS } from "@/lib/order-email-kinds"
-import type { OrderEmail } from "@/components/order-emails"
+import type { OrderEmail, OrderEmailEvent } from "@/components/order-emails"
 import { formatBRL } from "../format"
 import { shippingNotice } from "../order-sheet"
 import { ProductCover } from "../products/product-list"
@@ -95,6 +95,7 @@ export interface MobileOrderDetailProps {
   items: { id: string; title: string; quantity: number; subtotal: number; coverUrl: string | null; isEbook: boolean }[]
   messages: OrderMessage[]
   emails: OrderEmail[]
+  emailEvents: OrderEmailEvent[]
   manualKinds: string[]
 }
 
@@ -133,7 +134,7 @@ async function copy(text: string, message: string) {
 }
 
 export function MobileOrderDetail(props: MobileOrderDetailProps) {
-  const { order: o, customer, address, items, messages, emails, manualKinds } = props
+  const { order: o, customer, address, items, messages, emails, emailEvents, manualKinds } = props
   const [sheet, setSheet] = React.useState<SheetId | null>(null)
   const [running, setRunning] = React.useState<string | null>(null)
 
@@ -678,7 +679,7 @@ export function MobileOrderDetail(props: MobileOrderDetailProps) {
       <ActionsSheet {...sheetProps("actions")} order={o} onPick={(id) => setSheet(id)} running={running} onCheckPayment={() => paymentAction("check")} />
       <RefundSheet {...sheetProps("refund")} order={o} />
       <MessagesSheet {...sheetProps("messages")} orderId={o.id} shortId={o.shortId} customerName={customer?.name ?? null} messages={messages} />
-      <EmailsSheet {...sheetProps("emails")} orderId={o.id} recipient={customer?.email ?? null} emails={emails} manualKinds={manualKinds} />
+      <EmailsSheet {...sheetProps("emails")} orderId={o.id} recipient={customer?.email ?? null} emails={emails} events={emailEvents} manualKinds={manualKinds} />
       <StatusSheet {...sheetProps("status")} orderId={o.id} status={status} />
       <TrackingSheet {...sheetProps("tracking")} orderId={o.id} code={o.trackingCode} />
       <ProofSheet {...sheetProps("proof")} orderId={o.id} url={o.paymentProofUrl} />

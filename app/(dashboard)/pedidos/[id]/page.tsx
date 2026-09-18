@@ -216,6 +216,7 @@ export default async function PedidoDetailPage({
       }))}
       messages={messages ?? []}
       emails={emails ?? []}
+      emailEvents={emailEvents ?? []}
       manualKinds={manualKinds}
     />
   )

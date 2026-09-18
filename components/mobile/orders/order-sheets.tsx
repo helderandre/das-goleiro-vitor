@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
   Check,
+  ChevronDown,
   ExternalLink,
   FileText,
   FileUp,
@@ -20,7 +21,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { ORDER_STATUS_LABELS } from "@/lib/order-status"
-import { EMAIL_KIND_LABELS } from "@/lib/order-email-kinds"
+import { EMAIL_KINDS, EMAIL_KIND_LABELS } from "@/lib/order-email-kinds"
 import {
   cancelLabel,
   markMessagesAsRead,
@@ -36,7 +37,7 @@ import {
   updateTrackingCode,
   uploadPaymentProof,
 } from "@/app/(dashboard)/pedidos/actions"
-import type { OrderEmail } from "@/components/order-emails"
+import type { OrderEmail, OrderEmailEvent } from "@/components/order-emails"
 import { compressImage } from "@/lib/compress-image"
 import {
   Drawer,
@@ -723,21 +724,34 @@ const QUEUE: Record<string, { label: string; tone: string }> = {
 const REACHED = new Set(["delivered", "opened", "clicked"])
 const IN_QUEUE = new Set(["pending", "sending"])
 
+/** Por que um tipo de e-mail ainda não pode sair, pelo estado do pedido. */
+const WAITING_REASON: Record<string, string> = {
+  pedido_criado: "Não vale para pedido cancelado",
+  aguardando_pagamento: "Só enquanto o Pix ou boleto espera pagamento",
+  pagamento_recebido: "Aguardando pagamento",
+  pagamento_cancelado: "Só se o pedido for cancelado",
+  pedido_enviado: "Aguardando postagem e rastreio",
+  pedido_concluido: "Aguardando entrega",
+}
+
 export function EmailsSheet({
   orderId,
   recipient,
   emails,
+  events,
   manualKinds,
   ...sheet
 }: SheetProps & {
   orderId: string
   recipient: string | null
   emails: OrderEmail[]
+  events: OrderEmailEvent[]
   manualKinds: string[]
 }) {
   const router = useRouter()
   const [running, setRunning] = React.useState<string | null>(null)
   const [confirm, setConfirm] = React.useState<OrderEmail | null>(null)
+  const [expanded, setExpanded] = React.useState(false)
 
   // Último envio de cada tipo (o original ou o reenvio mais recente).
   const latest = new Map<string, OrderEmail>()
@@ -745,6 +759,29 @@ export function EmailsSheet({
     const prev = latest.get(e.kind)
     if (!prev || e.created_at > prev.created_at) latest.set(e.kind, e)
   }
+
+  // Histórico de cada tipo: todos os envios (original e reenvios) com seus eventos.
+  const historyByKind = new Map<string, { at: string; label: string; tone: string }[]>()
+  for (const e of emails) {
+    const list = historyByKind.get(e.kind) ?? []
+    list.push({
+      at: e.created_at,
+      label: e.resent_from ? "Reenvio pedido" : "Colocado na fila",
+      tone: "text-muted-foreground",
+    })
+    for (const ev of events.filter((x) => x.outbox_id === e.id)) {
+      const d = DELIVERY[ev.type]
+      list.push({
+        at: ev.occurred_at,
+        label: d?.label === "Aguardando entrega" ? "Enviado" : (d?.label ?? ev.type),
+        tone: d?.tone ?? "text-muted-foreground",
+      })
+    }
+    if (e.status === "failed")
+      list.push({ at: e.sent_at ?? e.created_at, label: `Falhou${e.last_error ? `: ${e.last_error}` : ""}`, tone: "text-destructive" })
+    historyByKind.set(e.kind, list.sort((a, b) => a.at.localeCompare(b.at)))
+  }
+  const waitingKinds = EMAIL_KINDS.filter((k) => !latest.has(k) && !manualKinds.includes(k))
 
   async function run(key: string, fn: () => Promise<{ error?: string }>, ok: string) {
     setRunning(key)
@@ -773,8 +810,10 @@ export function EmailsSheet({
             : (QUEUE[email.status] ?? { label: "Enviado", tone: "text-muted-foreground" })
           const when = email.sent_at ?? email.created_at
           const queued = IN_QUEUE.has(email.status)
+          const history = historyByKind.get(email.kind) ?? []
           return (
-            <div key={email.id} className="flex min-h-[60px] items-center gap-3 px-3.5 py-2.5">
+            <div key={email.id} className="flex flex-col gap-2.5 px-3.5 py-2.5">
+            <div className="flex min-h-10 items-center gap-3">
               <span className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="text-[15px] font-semibold">{EMAIL_KIND_LABELS[email.kind] ?? email.kind}</span>
                 <span className="truncate text-xs">
@@ -793,6 +832,17 @@ export function EmailsSheet({
                   Reenviar
                 </button>
               )}
+            </div>
+            {expanded && history.length > 0 && (
+              <ol className="ml-1 flex flex-col gap-1.5 border-l-2 border-muted-foreground/20 pb-1 pl-3.5">
+                {history.map((h, i) => (
+                  <li key={i} className="flex justify-between gap-3 text-xs">
+                    <span className={cn("min-w-0 truncate font-medium", h.tone)}>{h.label}</span>
+                    <span className="shrink-0 text-muted-foreground">{messageTime(h.at)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
             </div>
           )
         })}
@@ -813,10 +863,32 @@ export function EmailsSheet({
             </button>
           </div>
         ))}
-        {latest.size === 0 && manualKinds.length === 0 && (
+        {expanded &&
+          waitingKinds.map((kind) => (
+            <div key={kind} aria-disabled className="flex min-h-[60px] items-center gap-3 px-3.5 py-2.5 opacity-55">
+              <span className="flex grow flex-col gap-0.5">
+                <span className="text-[15px] font-semibold">{EMAIL_KIND_LABELS[kind] ?? kind}</span>
+                <span className="text-xs text-muted-foreground">{WAITING_REASON[kind]}</span>
+              </span>
+              <span className="flex h-9 shrink-0 items-center rounded-xl border px-3.5 text-sm font-bold text-muted-foreground">
+                Enviar
+              </span>
+            </div>
+          ))}
+        {latest.size === 0 && manualKinds.length === 0 && !expanded && (
           <p className="p-4 text-sm text-muted-foreground">Nenhum e-mail para este pedido ainda.</p>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="-mt-1.5 flex h-10 items-center justify-center gap-1.5 self-center rounded-full px-4 text-sm font-semibold text-primary"
+      >
+        {expanded ? "Ver menos" : "Ver todos os e-mails e o histórico"}
+        <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+      </button>
 
       {confirm ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-3.5">
