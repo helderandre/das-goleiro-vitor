@@ -34,12 +34,31 @@ function canTransition(current: string | null, next: string): boolean {
   return to > from;
 }
 
+const SHIPPING_RANK: Record<string, number> = {
+  pending: 0,
+  paid: 1,
+  generated: 2,
+  printed: 3,
+  posted: 4,
+  in_transit: 5,
+  delivered: 6,
+};
+
+/**
+ * Só avança o status da etiqueta: um "generated" atrasado não desfaz o
+ * "printed" que o painel marcou, nem um "posted" desfaz o "in_transit".
+ */
+function setShipping(update: Record<string, unknown>, current: string | null, next: string) {
+  const from = current ? SHIPPING_RANK[current] : undefined;
+  if (from === undefined || SHIPPING_RANK[next] > from) update.shipping_status = next;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   if (req.method === "GET") {
     return new Response(
-      JSON.stringify({ status: "ok", service: "Melhor Envio - Webhook", version: "3.0.0" }),
+      JSON.stringify({ status: "ok", service: "Melhor Envio - Webhook", version: "3.1.0" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -109,29 +128,38 @@ Deno.serve(async (req: Request) => {
     }
     if (data.tracking_url) update.tracking_url = data.tracking_url;
 
-    if (event.includes("posted")) {
-      update.shipping_status = "posted";
-      if (!order.shipped_at) update.shipped_at = data.posted_at ?? new Date().toISOString();
+    // "order.posted" → "posted". Comparação exata: "undelivered" contém
+    // "delivered" e já foi tratado como entregue por engano.
+    const kind = event.replace(/^order\./, "");
+
+    if (kind === "received" || kind === "posted") {
+      // received = pacote deixado num ponto de coleta (Loggi/Pegaki, Jadlog…);
+      // posted = transportadora escaneou. Nos dois o pacote saiu da mão do
+      // vendedor: conta como enviado, e o posted que vier depois só confirma.
+      setShipping(update, order.shipping_status, "posted");
+      if (!order.shipped_at) {
+        update.shipped_at = data.received_at ?? data.posted_at ?? new Date().toISOString();
+      }
       orderStatus = "shipped";
-    } else if (event.includes("delivered")) {
+    } else if (kind === "delivered") {
       update.shipping_status = "delivered";
       update.delivered_at = data.delivered_at ?? new Date().toISOString();
       orderStatus = "delivered";
-    } else if (event.includes("cancelled") || event.includes("canceled")) {
+    } else if (kind === "cancelled" || kind === "canceled") {
       update.shipping_status = "cancelled";
       update.needs_attention = true;
       update.attention_reason = "Etiqueta cancelada no Melhor Envio";
-    } else if (event.includes("undelivered")) {
+    } else if (kind === "undelivered") {
       update.shipping_status = "not_delivered";
       update.needs_attention = true;
       update.attention_reason = "Entrega não realizada — verificar com a transportadora";
-    } else if (event.includes("paused") || event.includes("suspended")) {
+    } else if (kind === "paused" || kind === "suspended") {
       update.needs_attention = true;
       update.attention_reason = "Envio pausado/suspenso pela transportadora";
-    } else if (event.includes("generated")) {
-      update.shipping_status = "generated";
-    } else if (event.includes("released")) {
-      update.shipping_status = "paid";
+    } else if (kind === "generated") {
+      setShipping(update, order.shipping_status, "generated");
+    } else if (kind === "released") {
+      setShipping(update, order.shipping_status, "paid");
     }
 
     const willTransition = orderStatus !== null && canTransition(order.status, orderStatus);
