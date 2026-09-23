@@ -491,22 +491,57 @@ function MoreSheet({
   )
 }
 
-/** Faixa no topo quando o aparelho perde a conexão; o que já carregou fica. */
-function subscribeOnline(cb: () => void) {
-  window.addEventListener("online", cb)
-  window.addEventListener("offline", cb)
-  return () => {
-    window.removeEventListener("online", cb)
-    window.removeEventListener("offline", cb)
+/**
+ * Confere a conexão de verdade: `navigator.onLine` dá falso negativo em alguns
+ * navegadores e sistemas (VPN, várias interfaces de rede), e a faixa aparecia
+ * com a internet funcionando. Só vale o que o servidor responde.
+ */
+async function reachable() {
+  try {
+    await fetch(`/favicon.ico?ping=${Date.now()}`, { method: "HEAD", cache: "no-store" })
+    return true
+  } catch {
+    return false
   }
 }
 
+/** Faixa no topo quando o aparelho perde a conexão; o que já carregou fica. */
 function OfflineBanner() {
-  const online = React.useSyncExternalStore(
-    subscribeOnline,
-    () => navigator.onLine,
-    () => true,
-  )
+  const [online, setOnline] = React.useState(true)
+
+  React.useEffect(() => {
+    let alive = true
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    async function check() {
+      const ok = await reachable()
+      if (!alive) return
+      setOnline(ok)
+      // Enquanto estiver fora, tenta de novo: a faixa some sozinha na volta.
+      if (!ok) timer = setTimeout(check, 5000)
+    }
+
+    function onOffline() {
+      // O evento costuma acertar, mas confirma antes de assustar.
+      void check()
+    }
+    function onOnline() {
+      setOnline(true)
+      if (timer) clearTimeout(timer)
+      void check()
+    }
+
+    if (!navigator.onLine) void check()
+    window.addEventListener("online", onOnline)
+    window.addEventListener("offline", onOffline)
+    return () => {
+      alive = false
+      if (timer) clearTimeout(timer)
+      window.removeEventListener("online", onOnline)
+      window.removeEventListener("offline", onOffline)
+    }
+  }, [])
+
   if (online) return null
   return (
     <div
